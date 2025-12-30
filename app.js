@@ -613,10 +613,11 @@ function renderLatestMap() {
 
     const actionId = Number(r.action);
 
-const color =
-  actionId === 4519311 ? "#3b82f6" : // sighted → blue
-  actionId === 4519312 ? "#f59e0b" : // maybe → orange
-  "#999";
+const ACTION_COLORS = {
+  4519311: "#3b82f6", // sighted
+  4519312: "#f59e0b"  // maybe
+};
+
 
 
     
