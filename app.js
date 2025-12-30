@@ -610,8 +610,9 @@ function renderLatestMap() {
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
 
 
+    
+const actionId = Number(r.action);
 
-    const actionId = Number(r.action);
 
 const ACTION_COLORS = {
   4519311: "#3b82f6", // sighted
@@ -619,7 +620,16 @@ const ACTION_COLORS = {
 };
 
 
+const color =
+  actionId === 4519311 ? "#3b82f6" : // sighted → blue
+  actionId === 4519312 ? "#f59e0b" : // maybe → orange
+  "#999";
 
+const color = ACTION_COLORS[Number(r.action)] || "#999";
+    
+console.log(r.action, typeof r.action);
+
+    
     
     L.circleMarker([r.latitude, r.longitude], {
       radius: 12,
