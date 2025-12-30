@@ -609,12 +609,17 @@ function renderLatestMap() {
 
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
 
-   const color =
-      r.action === 4519311 ? "#3b82f6" : // sighted → blue
-      r.action === 4519312 ? "#f59e0b" : // maybe → orange
-      "#999";
 
 
+    const actionId = Number(r.action);
+
+const color =
+  actionId === 4519311 ? "#3b82f6" : // sighted → blue
+  actionId === 4519312 ? "#f59e0b" : // maybe → orange
+  "#999";
+
+
+    
     L.circleMarker([r.latitude, r.longitude], {
       radius: 12,
       fillColor: color,
