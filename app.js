@@ -609,36 +609,18 @@ function renderLatestMap() {
 
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
 
-/*    const color =
+   const color =
       r.action === 4519311 ? "#3b82f6" : // sighted → blue
       r.action === 4519312 ? "#f59e0b" : // maybe → orange
       "#999";
-*/
-    
-let color;
-if (r.action === 4519311) {
-  color = "#2563eb"; // blue (sighted)
-} else if (r.action === 4519312) {
-  color = "#f97316"; // orange (maybe)
-} else {
-  return; // skip unknown actions entirely
-}
 
 
-/*
     L.circleMarker([r.latitude, r.longitude], {
       radius: 12,
       fillColor: color,
       fillOpacity: opacity,
       stroke: false
     })
-*/
-    L.circleMarker([r.latitude, r.longitude], {
-  radius: 14,
-  fillColor: color,
-  fillOpacity: opacity,
-  stroke: false
-})
 
       .bindPopup(
         `<strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
