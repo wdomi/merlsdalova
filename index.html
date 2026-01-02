@@ -120,6 +120,17 @@
       flex:1;
       padding:4px;
     }
+
+
+
+<!-- new : 26-01-02 9:02 -->
+    .leaflet-popup-content {
+  font-size: 12px;
+}
+<!-- new : 26-01-02 9:02 end -->
+
+    
+  
   </style>
 </head>
 
@@ -232,6 +243,7 @@
 
 <!-- ===================== LATEST OBSERVATIONS POPUP ===================== -->
 
+<!-- old : 26-01-02 9:02
 <div id="popup-latest-bg" class="popup-bg">
   <div class="popup">
     <h3>Letzte Beobachtungen</h3>
@@ -239,7 +251,39 @@
     <div id="latest-list">Lade...</div>
   </div>
 </div>
+-->
 
+<!-- new : 26-01-02 9:02 -->
+<div id="popup-latest-bg" class="popup-bg">
+  <div class="popup">
+    <h3>Letzte Beobachtungen</h3>
+
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+      <select id="latest-bird-filter" style="flex:1; padding:6px;">
+        <option value="">Vogel auswählen</option>
+      </select>
+      <button id="latest-reset" class="submit-btn submit-btn-ghost">Reset</button>
+    </div>
+
+    <div style="margin-bottom:6px;">
+      <label style="font-size:12px;">
+        Letzte <span id="days-label">365</span> Tage
+      </label>
+      <input id="time-slider" type="range" min="7" max="365" step="7" value="365" style="width:100%;">
+    </div>
+
+    <div id="latest-map" style="height:300px; border-radius:8px;"></div>
+
+    <button class="submit-btn submit-btn-ghost" style="margin-top:8px;"
+      onclick="closePopup('popup-latest-bg')">
+      Schliessen
+    </button>
+  </div>
+</div>
+
+<!-- new : 26-01-02 9:02 -->
+
+  
 <script src="/app.js"></script>
 </body>
 </html>
