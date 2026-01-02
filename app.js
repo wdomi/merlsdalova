@@ -541,7 +541,7 @@ function initLatestMap() {
 
   if (latestMap) latestMap.remove();
 
-latestMap = L.map(el).setView([46.625194, 10.193387], 10);
+  latestMap = L.map(el).setView([46.7, 9.6], 9);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap"
@@ -609,37 +609,17 @@ function renderLatestMap() {
 
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
 
-/*    const color =
+    const color =
       r.action === 4519311 ? "#3b82f6" : // sighted → blue
       r.action === 4519312 ? "#f59e0b" : // maybe → orange
       "#999";
-*/
-    
-let color;
-if (r.action === 4519311) {
-  color = "#2563eb"; // blue (sighted)
-} else if (r.action === 4519312) {
-  color = "#f97316"; // orange (maybe)
-} else {
-  return; // skip unknown actions entirely
-}
 
-
-/*
     L.circleMarker([r.latitude, r.longitude], {
       radius: 12,
       fillColor: color,
       fillOpacity: opacity,
       stroke: false
     })
-*/
-    L.circleMarker([r.latitude, r.longitude], {
-  radius: 14,
-  fillColor: color,
-  fillOpacity: opacity,
-  stroke: false
-})
-
       .bindPopup(
         `<strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
          ${r.date}`
