@@ -496,6 +496,11 @@ async function loadLatest() {
       body: JSON.stringify({ mode: "list" })
     });
 
+// here
+    document.getElementById("days-label").textContent = "7";
+document.getElementById("time-slider").value = 7;
+//
+    
     const rows = await r.json();
     box.innerHTML = "";
 
@@ -652,7 +657,7 @@ let latestMap = null;
 let latestLayer = null;
 let latestData = [];
 let latestBirdFilter = "";
-let latestMaxDays = 365;
+let latestMaxDays = 14;
 
 
 // ------------------------------------------------------------------------
