@@ -481,7 +481,7 @@ async function sendToServer(payload) {
 
 
 // ------------------------------------------------------------------------
-// LATEST OBSERVATIONS
+// LATEST OBSERVATIONS - old 26-01-02 9:02
 // ------------------------------------------------------------------------
 
 async function loadLatest() {
@@ -510,6 +510,140 @@ async function loadLatest() {
     box.textContent = "Fehler beim Laden.";
   }
 }
+
+// ------------------------------------------------------------------------
+// LATEST OBSERVATIONS - new 26-01-02 9:02
+// ------------------------------------------------------------------------
+
+async function loadLatest() {
+  openPopup("popup-latest-bg");
+
+  try {
+    const r = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "list" })
+    });
+
+    latestData = await r.json();
+
+    initLatestMap();
+    populateLatestDropdown();
+    renderLatestMap();
+
+  } catch (err) {
+    alert("Fehler beim Laden der Beobachtungen.");
+    console.error(err);
+  }
+}
+
+// INITIALIZE MAP
+
+function initLatestMap() {
+  const el = document.getElementById("latest-map");
+  el.innerHTML = "";
+
+  if (latestMap) latestMap.remove();
+
+  latestMap = L.map(el).setView([46.625517, 10.193635], 9);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(latestMap);
+
+  latestLayer = L.layerGroup().addTo(latestMap);
+
+  setTimeout(() => latestMap.invalidateSize(), 200);
+}
+
+
+// DROP DOWN BIRDS
+
+function populateLatestDropdown() {
+  const sel = document.getElementById("latest-bird-filter");
+  sel.innerHTML = `<option value="">Vogel auswählen</option>`;
+
+  const seen = new Set();
+
+  latestData.forEach(r => {
+    const key = `${r.bird_name} (${r.bird_id})`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      const opt = document.createElement("option");
+      opt.value = r.bird_id;
+      opt.textContent = key;
+      sel.appendChild(opt);
+    }
+  });
+
+  sel.onchange = () => {
+    latestBirdFilter = sel.value;
+    renderLatestMap();
+  };
+
+  document.getElementById("latest-reset").onclick = () => {
+    latestBirdFilter = "";
+    sel.value = "";
+    renderLatestMap();
+  };
+
+  const slider = document.getElementById("time-slider");
+  const label = document.getElementById("days-label");
+
+  slider.oninput = () => {
+    latestMaxDays = Number(slider.value);
+    label.textContent = slider.value;
+    renderLatestMap();
+  };
+}
+
+
+// RENDERING OBSERVATION BLOBS
+
+function renderLatestMap() {
+  latestLayer.clearLayers();
+
+  const now = Date.now();
+
+  latestData.forEach(r => {
+    if (!r.latitude || !r.longitude || !r.date) return;
+
+    if (latestBirdFilter && r.bird_id !== latestBirdFilter) return;
+
+    const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
+    if (daysOld > latestMaxDays) return;
+
+    const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
+
+    const color =
+      r.action === 4519311 ? "#3b82f6" : // sighted → blue
+      r.action === 4519312 ? "#f59e0b" : // maybe → orange
+      "#999";
+
+    L.circleMarker([r.latitude, r.longitude], {
+      radius: 12,
+      fillColor: color,
+      fillOpacity: opacity,
+      stroke: false
+    })
+      .bindPopup(
+        `<strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
+         ${r.date}`
+      )
+      .addTo(latestLayer);
+  });
+}
+
+
+// ------------------------------------------------------------------------
+// GLOBAL STATE POP UP MAP - new : 26-01-02 9:02
+// ------------------------------------------------------------------------
+let latestMap = null;
+let latestLayer = null;
+let latestData = [];
+let latestBirdFilter = "";
+let latestMaxDays = 365;
+
 
 // ------------------------------------------------------------------------
 // POPUPS
