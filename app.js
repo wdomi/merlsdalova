@@ -545,7 +545,7 @@ function initLatestMap() {
 
   if (latestMap) latestMap.remove();
 
-  latestMap = L.map(el).setView([46.625517, 10.193635], 13);
+  latestMap = L.map(el).setView([46.628584, 10.194596], 15);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap"
