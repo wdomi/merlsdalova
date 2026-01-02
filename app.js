@@ -527,6 +527,15 @@ async function loadLatest() {
 
     latestData = await r.json();
 
+// set popup map title of sliding bar (1/2)
+const slider = document.getElementById("time-slider");
+const label = document.getElementById("days-label");
+
+// sync UI with current state (2/2)
+slider.value = latestMaxDays;
+label.textContent = latestMaxDays;
+
+    
     initLatestMap();
     populateLatestDropdown();
     renderLatestMap();
@@ -596,15 +605,6 @@ function populateLatestDropdown() {
     renderLatestMap();
   };
 }
-
-
-// set popup map title of sliding bar (1/2)
-const slider = document.getElementById("time-slider");
-const label = document.getElementById("days-label");
-
-// sync UI with current state (2/2)
-slider.value = latestMaxDays;
-label.textContent = latestMaxDays;
 
 
 
