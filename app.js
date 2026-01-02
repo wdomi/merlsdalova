@@ -481,6 +481,18 @@ async function sendToServer(payload) {
 
 
 // ------------------------------------------------------------------------
+// Track the most recent visible observation - new : 26-01-02 9:02
+// ------------------------------------------------------------------------
+
+function getLatestVisibleObservation(data) {
+  return data
+    .filter(r => r._daysOld <= latestMaxDays)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+}
+
+
+
+// ------------------------------------------------------------------------
 // LATEST OBSERVATIONS - old 26-01-02 9:02
 // ------------------------------------------------------------------------
 
@@ -517,9 +529,9 @@ document.getElementById("time-slider").value = 7;
 }
 
 // ------------------------------------------------------------------------
-// LATEST OBSERVATIONS - new 26-01-02 9:02
+// LATEST OBSERVATIONS - old 26-01-02 9:02
 // ------------------------------------------------------------------------
-
+/*
 async function loadLatest() {
   openPopup("popup-latest-bg");
 
@@ -649,6 +661,86 @@ function renderLatestMap() {
   });
 }
 
+*/
+
+
+
+// ------------------------------------------------------------------------
+// LATEST OBSERVATIONS - new 26-01-02 10:24
+// ------------------------------------------------------------------------
+
+
+// RENDERING OBSERVATION BLOBS
+
+function renderLatestMap() {
+  latestLayer.clearLayers();
+
+  const now = Date.now();
+
+  // 1️⃣ find latest visible observation
+  let latestObs = null;
+
+  latestData.forEach(r => {
+    if (!r.latitude || !r.longitude || !r.date) return;
+    if (latestBirdFilter && r.bird_id !== latestBirdFilter) return;
+
+    const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
+    if (daysOld > latestMaxDays) return;
+
+    if (
+      !latestObs ||
+      new Date(r.date) > new Date(latestObs.date)
+    ) {
+      latestObs = r;
+    }
+  });
+
+  // 2️⃣ render markers
+  latestData.forEach(r => {
+    if (!r.latitude || !r.longitude || !r.date) return;
+    if (latestBirdFilter && r.bird_id !== latestBirdFilter) return;
+
+    const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
+    if (daysOld > latestMaxDays) return;
+
+    const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
+
+    const color =
+      r.action === 4519311 ? "#3b82f6" : // sighted → blue
+      r.action === 4519312 ? "#f59e0b" : // maybe → orange
+      "#999";
+
+    const isLatest = latestObs && r === latestObs;
+
+    L.circleMarker([r.latitude, r.longitude], {
+      radius: isLatest ? 12 : 10,
+      fillColor: color,
+      fillOpacity: opacity,
+      color: isLatest ? "#000" : "transparent", // black outline
+      weight: isLatest ? 2 : 0
+    })
+      .bindPopup(
+        `<strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
+         ${r.date}`
+      )
+      .addTo(latestLayer);
+  });
+
+  // 3️⃣ center & zoom once on the latest blob
+  if (!latestAutoCentered && latestObs) {
+    latestAutoCentered = true;
+
+    latestMap.setView(
+      [latestObs.latitude, latestObs.longitude],
+      12,
+      { animate: true }
+    );
+  }
+}
+
+
+
+
 
 // ------------------------------------------------------------------------
 // GLOBAL STATE POP UP MAP - new : 26-01-02 9:02
@@ -658,6 +750,8 @@ let latestLayer = null;
 let latestData = [];
 let latestBirdFilter = "";
 let latestMaxDays = 14;
+let latestAutoCentered = false;
+
 
 
 // ------------------------------------------------------------------------
