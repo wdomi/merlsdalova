@@ -545,7 +545,7 @@ function initLatestMap() {
 
   if (latestMap) latestMap.remove();
 
-  latestMap = L.map(el).setView([46.625517, 10.193635], 9);
+  latestMap = L.map(el).setView([46.625517, 10.193635], 11);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap"
@@ -621,7 +621,7 @@ function renderLatestMap() {
       "#999";
 
     L.circleMarker([r.latitude, r.longitude], {
-      radius: 12,
+      radius: 10,
       fillColor: color,
       fillOpacity: opacity,
       stroke: false
