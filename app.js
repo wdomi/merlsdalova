@@ -411,50 +411,55 @@ async function saveSelectedReports() {
   const entries = window._pendingSelections;
   if (!entries || !entries.length) return;
 
-  const lat = Number(document.getElementById("report-lat").value);
-  const lng = Number(document.getElementById("report-lon").value);
+const lat = Number(document.getElementById("report-lat").value);
+const lng = Number(document.getElementById("report-lon").value);
+  // ⚠️ ORDER MATTERS: lat FIRST, lon SECOND
+const lv95 = wgs84ToLV95(lat, lng);
+  
+  const dateVal = document.getElementById("report-date").value; // YYYY-MM-DD
+const timeVal = document.getElementById("report-time").value || ""; // HH:MM or HH:MM:SS
 
-  assertLatLon(lat, lng);
 
   if (isNaN(lat) || isNaN(lng)) {
     alert("Ungültige Koordinaten.");
     return;
   }
 
-  const lv95 = wgs84ToLV95(lat, lng);
-
-  const dateVal = document.getElementById("report-date").value;
-  const timeVal = document.getElementById("report-time").value || "";
-
   for (const entry of entries) {
     const actionId = ACTION_IDS[entry.action];
+
     if (!actionId) {
       alert("Bitte für jeden Vogel 'beobachtet' oder 'unsicher' auswählen.");
       return;
     }
 
-    const payload = {
-      bird_name: entry.bird.name || "",
-      bird_id: entry.bird.bird_id || "",
-      action: actionId,
+const payload = {
+  bird_name: entry.bird.name || "",
+  bird_id: entry.bird.bird_id || "",
+  action: actionId,
+  latitude: lat,
+  longitude: lng,
 
-      latitude: lat,
-      longitude: lng,
+  // ✅ LV95 coordinates
+  lat_LV95: lv95.north,
+  lon_LV95: lv95.east,
+  elevation_LV95: lv95.height,
 
-      // LV95 — CORRECT
-      lat_LV95: lv95.north,
-      lon_LV95: lv95.east,
-      elevation_LV95: lv95.height,
+  territory: entry.bird.territory || "",
+  field_6525910: dateVal,
+  field_6525920: timeVal
+};
 
-      territory: entry.bird.territory || "",
-      field_6525910: dateVal,
-      field_6525920: timeVal
-    };
-
-    if (!navigator.onLine) {
-      addToOfflineQueue(payload);
-    } else {
-      await sendToServer(payload);
+    try {
+      if (!navigator.onLine) {
+        addToOfflineQueue(payload);
+      } else {
+        await sendToServer(payload);
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Fehler beim Speichern.");
+      return;
     }
   }
 
@@ -463,7 +468,6 @@ async function saveSelectedReports() {
   renderBirds();
   alert("Gespeichert.");
 }
-
 
 // ------------------------------------------------------------------------
 // SERVER
