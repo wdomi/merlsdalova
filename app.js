@@ -430,16 +430,24 @@ const timeVal = document.getElementById("report-time").value || ""; // HH:MM or 
       return;
     }
 
-    const payload = {
-      bird_name: entry.bird.name || "",
-      bird_id: entry.bird.bird_id || "",
-      action: actionId,
-      latitude: lat,
-      longitude: lng,
-      territory: entry.bird.territory || "",
+    const lv95 = wgs84ToLV95(lat, lng);
+
+const payload = {
+  bird_name: entry.bird.name || "",
+  bird_id: entry.bird.bird_id || "",
+  action: actionId,
+  latitude: lat,
+  longitude: lng,
+
+  // ✅ LV95 coordinates
+  lat_LV95: lv95.north,
+  lon_LV95: lv95.east,
+  elevation_LV95: lv95.height,
+
+  territory: entry.bird.territory || "",
   field_6525910: dateVal,
   field_6525920: timeVal
-    };
+};
 
     try {
       if (!navigator.onLine) {
@@ -614,6 +622,57 @@ function renderLatestMap() {
       .addTo(latestLayer);
   });
 }
+
+
+
+// ------------------------------------------------------------------------
+// COORDINATE CONVERSION: WGS84 → LV95 (CH1903+)
+// Source: swisstopo official formulas
+// ------------------------------------------------------------------------
+
+function wgs84ToLV95(lat, lon, h = null) {
+  // convert degrees to sexagesimal seconds
+  const latSec =
+    lat * 3600 -
+    169028.66;
+  const lonSec =
+    lon * 3600 -
+    26782.5;
+
+  const latAux = latSec / 10000;
+  const lonAux = lonSec / 10000;
+
+  const east =
+    2600000 +
+    200147.07 +
+    308807.95 * lonAux +
+    3745.25 * Math.pow(latAux, 2) +
+    76.63 * Math.pow(lonAux, 2) -
+    194.56 * Math.pow(latAux, 2) * lonAux +
+    119.79 * Math.pow(lonAux, 3);
+
+  const north =
+    1200000 +
+    600072.37 * latAux +
+    211455.93 * Math.pow(lonAux, 2) -
+    10938.51 * Math.pow(latAux, 2) -
+    0.36 * Math.pow(lonAux, 2) * latAux -
+    44.54 * Math.pow(latAux, 3);
+
+  // elevation (optional)
+  let height = null;
+  if (typeof h === "number") {
+    height = h + 49.55 - 12.6 * lonAux - 22.64 * latAux;
+  }
+
+  return {
+    east: Number(east.toFixed(3)),
+    north: Number(north.toFixed(3)),
+    height: height !== null ? Number(height.toFixed(2)) : null
+  };
+}
+
+
 
 
 
