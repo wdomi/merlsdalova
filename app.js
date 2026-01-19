@@ -411,8 +411,11 @@ async function saveSelectedReports() {
   const entries = window._pendingSelections;
   if (!entries || !entries.length) return;
 
-  const lat = Number(document.getElementById("report-lat").value);
-  const lng = Number(document.getElementById("report-lon").value);
+const lat = Number(document.getElementById("report-lat").value);
+const lng = Number(document.getElementById("report-lon").value);
+  // ⚠️ ORDER MATTERS: lat FIRST, lon SECOND
+const lv95 = wgs84ToLV95(lat, lng);
+  
   const dateVal = document.getElementById("report-date").value; // YYYY-MM-DD
 const timeVal = document.getElementById("report-time").value || ""; // HH:MM or HH:MM:SS
 
@@ -429,8 +432,6 @@ const timeVal = document.getElementById("report-time").value || ""; // HH:MM or 
       alert("Bitte für jeden Vogel 'beobachtet' oder 'unsicher' auswählen.");
       return;
     }
-
-    const lv95 = wgs84ToLV95(lat, lng);
 
 const payload = {
   bird_name: entry.bird.name || "",
@@ -630,7 +631,7 @@ function renderLatestMap() {
 // Accuracy: < 1 m
 // ------------------------------------------------------------------------
 
-function wgs84ToLV95(lat, lon, h = null) {
+/* function wgs84ToLV95(lat, lon, h = null) {
 
   // Convert degrees to arcseconds
   const latSec = lat * 3600;
@@ -669,6 +670,46 @@ function wgs84ToLV95(lat, lon, h = null) {
     east: Number(E.toFixed(2)),
     north: Number(N.toFixed(2)),
     height: H !== null ? Number(H.toFixed(2)) : null
+  };
+}
+*/
+
+
+function wgs84ToLV95(lat, lon, h = null) {
+  // degrees → arcseconds
+  const latSec = lat * 3600;
+  const lonSec = lon * 3600;
+
+  // auxiliary values
+  const latAux = (latSec - 169028.66) / 10000;
+  const lonAux = (lonSec - 26782.5) / 10000;
+
+  const east =
+    2600000 +
+    200147.07 +
+    308807.95 * lonAux +
+    3745.25 * latAux ** 2 +
+    76.63 * lonAux ** 2 -
+    194.56 * latAux ** 2 * lonAux +
+    119.79 * lonAux ** 3;
+
+  const north =
+    1200000 +
+    600072.37 * latAux +
+    211455.93 * lonAux ** 2 -
+    10938.51 * latAux ** 2 -
+    0.36 * lonAux ** 2 * latAux -
+    44.54 * latAux ** 3;
+
+  let height = null;
+  if (typeof h === "number") {
+    height = h + 49.55 - 12.6 * lonAux - 22.64 * latAux;
+  }
+
+  return {
+    east: Number(east.toFixed(2)),
+    north: Number(north.toFixed(2)),
+    height
   };
 }
 
