@@ -411,6 +411,8 @@ async function saveSelectedReports() {
   const entries = window._pendingSelections;
   if (!entries || !entries.length) return;
 
+// ⚠️ ORDER MATTERS: lat FIRST, lon SECOND
+const lv95 = wgs84ToLV95(lat, lng);
   const lat = Number(document.getElementById("report-lat").value);
   const lng = Number(document.getElementById("report-lon").value);
   const dateVal = document.getElementById("report-date").value; // YYYY-MM-DD
@@ -631,17 +633,15 @@ function renderLatestMap() {
 // ------------------------------------------------------------------------
 
 function wgs84ToLV95(lat, lon, h = null) {
-
-  // Convert degrees to arcseconds
+  // degrees → arcseconds
   const latSec = lat * 3600;
   const lonSec = lon * 3600;
 
-  // Auxiliary values (Bern)
+  // auxiliary values
   const latAux = (latSec - 169028.66) / 10000;
   const lonAux = (lonSec - 26782.5) / 10000;
 
-  // Easting (E)
-  const E =
+  const east =
     2600000 +
     200147.07 +
     308807.95 * lonAux +
@@ -650,8 +650,7 @@ function wgs84ToLV95(lat, lon, h = null) {
     194.56 * latAux ** 2 * lonAux +
     119.79 * lonAux ** 3;
 
-  // Northing (N)
-  const N =
+  const north =
     1200000 +
     600072.37 * latAux +
     211455.93 * lonAux ** 2 -
@@ -659,18 +658,18 @@ function wgs84ToLV95(lat, lon, h = null) {
     0.36 * lonAux ** 2 * latAux -
     44.54 * latAux ** 3;
 
-  // Height (optional)
-  let H = null;
+  let height = null;
   if (typeof h === "number") {
-    H = h + 49.55 - 12.6 * lonAux - 22.64 * latAux;
+    height = h + 49.55 - 12.6 * lonAux - 22.64 * latAux;
   }
 
   return {
-    east: Number(E.toFixed(2)),
-    north: Number(N.toFixed(2)),
-    height: H !== null ? Number(H.toFixed(2)) : null
+    east: Number(east.toFixed(2)),
+    north: Number(north.toFixed(2)),
+    height
   };
 }
+
 
 
 
