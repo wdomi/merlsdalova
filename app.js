@@ -413,8 +413,13 @@ async function saveSelectedReports() {
 
 // ⚠️ ORDER MATTERS: lat FIRST, lon SECOND
 const lv95 = wgs84ToLV95(lat, lng);
+  
   const lat = Number(document.getElementById("report-lat").value);
   const lng = Number(document.getElementById("report-lon").value);
+  
+  assertLatLon(lat, lng);
+  const lv95 = wgs84ToLV95(lat, lng);
+  
   const dateVal = document.getElementById("report-date").value; // YYYY-MM-DD
 const timeVal = document.getElementById("report-time").value || ""; // HH:MM or HH:MM:SS
 
