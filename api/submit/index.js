@@ -106,18 +106,25 @@ return res.status(200).json(
   const latitude = safeNum(body.latitude);
   const longitude = safeNum(body.longitude);
 
-  const baserowRow = {
-    field_6258635: bird_name,
-    field_6258636: bird_id,
-    field_6258637: action,
-    field_6258639: latitude,
-    field_6258640: longitude,
-    field_6258643: territory,
-    // ✅ new manual fields
+const baserowRow = {
+  field_6258635: bird_name,
+  field_6258636: bird_id,
+  field_6258637: action,
+  field_6258639: latitude,
+  field_6258640: longitude,
+
+  // ✅ LV95 fields
+  field_6913479: safeNum(body.lat_LV95),      // northing
+  field_6913496: safeNum(body.lon_LV95),      // easting
+  field_6913501: safeNum(body.elevation_LV95),
+
+  field_6258643: territory,
   field_6525910: body.field_6525910 || null, // date_manual
   field_6525920: body.field_6525920 || null, // time_manual
-    field_DELETED: false        // 👈 NEW, safe default
-  };
+  field_DELETED: false       // 👈 NEW, safe default
+};
+
+
 
   try {
     const r = await fetch(BASE_URL, {
