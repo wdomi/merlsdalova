@@ -631,38 +631,7 @@ function renderLatestMap() {
 // Accuracy: < 1 m
 // ------------------------------------------------------------------------
 
-function wgs84ToLV95(lat, lon) {
-  const latSec = lat * 3600;
-  const lonSec = lon * 3600;
 
-  const latAux = (latSec - 169028.66) / 10000;
-  const lonAux = (lonSec - 26782.5)  / 10000;
-
-  const east =
-    2600000 +
-    200147.07 +
-    308807.95 * lonAux +
-    3745.25   * latAux ** 2 +
-    76.63     * lonAux ** 2 -
-    194.56    * latAux ** 2 * lonAux +
-    119.79    * lonAux ** 3;
-
-  const north =
-    1200000 +
-    600072.37 * latAux +
-    211455.93 * lonAux ** 2 -
-    10938.51  * latAux ** 2 -
-    0.36      * lonAux ** 2 * latAux -
-    44.54     * latAux ** 3;
-
-  return {
-    east: Number(east.toFixed(2)),
-    north: Number(north.toFixed(2))
-  };
-}
-
-
-/*
 function wgs84ToLV95(lat, lon) {
   const latSec = lat * 3600;
   const lonSec = lon * 3600;
@@ -690,7 +659,7 @@ function wgs84ToLV95(lat, lon) {
     north: Number(north.toFixed(2))
   };
 }
-*/
+
 
 
 
