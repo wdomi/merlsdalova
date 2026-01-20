@@ -686,7 +686,6 @@ function wgs84ToLV95(lat, lon, h = null) {
 
   const east =
     2600000 +
-    200147.07 +
     308807.95 * lonAux +
     3745.25 * latAux ** 2 +
     76.63 * lonAux ** 2 -
