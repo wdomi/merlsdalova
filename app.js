@@ -674,44 +674,33 @@ function renderLatestMap() {
 }
 */
 
-
-function wgs84ToLV95(lat, lon, h = null) {
-  // degrees → arcseconds
+function wgs84ToLV95(lat, lon) {
   const latSec = lat * 3600;
   const lonSec = lon * 3600;
 
-  // auxiliary values
   const latAux = (latSec - 169028.66) / 10000;
   const lonAux = (lonSec - 26782.5) / 10000;
 
   const east =
     2600000 +
-    308807.95 * lonAux +
-    3745.25 * latAux ** 2 +
-    76.63 * lonAux ** 2 -
-    194.56 * latAux ** 2 * lonAux +
-    119.79 * lonAux ** 3;
+    211455.93 * lonAux -
+    10938.51 * lonAux * latAux -
+    0.36 * lonAux * latAux ** 2 -
+    44.54 * lonAux ** 3;
 
   const north =
     1200000 +
-    600072.37 * latAux +
-    211455.93 * lonAux ** 2 -
-    10938.51 * latAux ** 2 -
-    0.36 * lonAux ** 2 * latAux -
-    44.54 * latAux ** 3;
-
-  let height = null;
-  if (typeof h === "number") {
-    height = h + 49.55 - 12.6 * lonAux - 22.64 * latAux;
-  }
+    308807.95 * latAux +
+    3745.25 * lonAux ** 2 +
+    76.63 * latAux ** 2 -
+    194.56 * lonAux ** 2 * latAux +
+    119.79 * latAux ** 3;
 
   return {
     east: Number(east.toFixed(2)),
-    north: Number(north.toFixed(2)),
-    height
+    north: Number(north.toFixed(2))
   };
 }
-
 
 
 
