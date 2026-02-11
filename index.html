@@ -226,24 +226,37 @@
       <input type="time" id="report-time" step="1">
     </div>
 
+<!-- MAP -->
+    
     <div id="map"></div>
-
+    
+    <!-- Add manual coordinates -->
+    
     <div class="field-row">
       <input type="number" id="report-lat" step="0.0000000001" placeholder="Latitude">
       <input type="number" id="report-lon" step="0.0000000001" placeholder="Longitude">
     </div>
     
-    <div id="quick-locations" style="text-align:right; margin-top:6px; font-size:13px;">
-      <div class="quick-loc" data-lat="46.637634" data-lon="10.181809">obere Spöl</div>
-      <div class="quick-loc" data-lat="46.691645" data-lon="10.125708">untere Spöl</div>
-      <div class="quick-loc" data-lat="46.618562" data-lon="10.351977">Rom</div>
-    </div>
-    
-    <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
-      <button id="btn-find-me" class="submit-btn submit-btn-ghost">Finde mich</button>
-      <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
-      <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
-    </div>
+   <!-- Buttons + Quick Locations aligned on same row -->
+
+<div style="margin-top:8px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+
+  <!-- LEFT SIDE: Buttons -->
+  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+    <button id="btn-find-me" class="submit-btn submit-btn-ghost">Finde mich</button>
+    <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
+    <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+  </div>
+
+  <!-- RIGHT SIDE: Location magnets -->
+  <div id="quick-locations" style="font-size:13px; text-align:right;">
+    <div class="quick-loc" data-lat="46.637634" data-lon="10.181809">obere Spöl</div>
+    <div class="quick-loc" data-lat="46.691645" data-lon="10.125708">untere Spöl</div>
+    <div class="quick-loc" data-lat="46.618562" data-lon="10.351977">Rom</div>
+  </div>
+
+</div>
+
   </div>
 </div>
 
