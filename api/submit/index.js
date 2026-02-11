@@ -3,7 +3,7 @@
 // Extended version:
 // - CREATE observation
 // - LIST observations (sorted newest first, excluding deleted)
-// - SOFT DELETE via "deleted" boolean
+// - SOFT DELETE via boolean field_6351349
 // -----------------------------------------------------------------------------
 
 export default async function handler(req, res) {
@@ -30,9 +30,9 @@ export default async function handler(req, res) {
 
       const url =
         `${BASE_URL}` +
-        `&filter__field_DELETED__equal=false` +   // exclude deleted
-        `&order_by=-field_6258638` +              // newest first
-        `&size=200`;                              // adjust if needed
+        `&filter__field_6351349__equal=false` +   // ✅ correct boolean field
+        `&order_by=-field_6258638` +
+        `&size=200`;
 
       const r = await fetch(url, {
         method: "GET",
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
           latitude: r.field_6258639,
           longitude: r.field_6258640,
           territory: r.field_6258643,
-          deleted: r.field_DELETED
+          deleted: r.field_6351349   // ✅ correct field
         }))
       );
 
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
           method: "PATCH",
           headers,
           body: JSON.stringify({
-            field_DELETED: body.deleted
+            field_6351349: body.deleted   // ✅ correct field
           })
         }
       );
@@ -101,7 +101,6 @@ export default async function handler(req, res) {
   // CREATE OBSERVATION
   // ===========================================================================
 
-  const date = body.date || "";
   const bird_name = body.bird_name || "";
   const bird_id = body.bird_id || "";
   const action = body.action;
@@ -133,7 +132,7 @@ export default async function handler(req, res) {
     field_6525910: body.field_6525910 || null,
     field_6525920: body.field_6525920 || null,
 
-    field_DELETED: false
+    field_6351349: false   // ✅ correct boolean field
   };
 
   try {
