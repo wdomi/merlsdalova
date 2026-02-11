@@ -1,8 +1,8 @@
 // -----------------------------------------------------------------------------
 // /api/submit
 // Extended version:
-// - CREATE observation (existing behavior, unchanged)
-// - LIST observations (excluding deleted)
+// - CREATE observation
+// - LIST observations (sorted newest first, excluding deleted)
 // - SOFT DELETE via "deleted" boolean
 // -----------------------------------------------------------------------------
 
@@ -23,14 +23,21 @@ export default async function handler(req, res) {
   };
 
   // ===========================================================================
-  // NEW: LIST (only non-deleted)
+  // LIST OBSERVATIONS (NEWEST FIRST, NOT DELETED)
   // ===========================================================================
   if (body.mode === "list") {
     try {
-      const r = await fetch(
-        `${BASE_URL}&filter__field_DELETED__equal=false&size=10000`,
-        { method: "GET", headers }
-      );
+
+      const url =
+        `${BASE_URL}` +
+        `&filter__field_DELETED__equal=false` +   // exclude deleted
+        `&order_by=-field_6258638` +              // newest first
+        `&size=200`;                              // adjust if needed
+
+      const r = await fetch(url, {
+        method: "GET",
+        headers
+      });
 
       if (!r.ok) {
         const txt = await r.text();
@@ -38,26 +45,28 @@ export default async function handler(req, res) {
       }
 
       const data = await r.json();
-return res.status(200).json(
-  (data.results || []).map(r => ({
-    id: r.id,
-    date: r.field_6258638 || "",
-    bird_name: r.field_6258635 || "",
-    bird_id: r.field_6258636 || "",
-    action: r.field_6258637?.value ?? r.field_6258637,
-    latitude: r.field_6258639,
-    longitude: r.field_6258640,
-    territory: r.field_6258643,
-    deleted: r.field_DELETED
-  }))
-);
+
+      return res.status(200).json(
+        (data.results || []).map(r => ({
+          id: r.id,
+          date: r.field_6258638 || "",
+          bird_name: r.field_6258635 || "",
+          bird_id: r.field_6258636 || "",
+          action: r.field_6258637?.value ?? r.field_6258637,
+          latitude: r.field_6258639,
+          longitude: r.field_6258640,
+          territory: r.field_6258643,
+          deleted: r.field_DELETED
+        }))
+      );
+
     } catch (err) {
       return res.status(500).json({ error: err.toString() });
     }
   }
 
   // ===========================================================================
-  // NEW: SOFT DELETE (toggle deleted flag)
+  // SOFT DELETE
   // ===========================================================================
   if (body.mode === "set_deleted") {
     if (typeof body.id !== "number" || typeof body.deleted !== "boolean") {
@@ -82,14 +91,16 @@ return res.status(200).json(
       }
 
       return res.status(200).json({ ok: true });
+
     } catch (err) {
       return res.status(500).json({ error: err.toString() });
     }
   }
 
   // ===========================================================================
-  // EXISTING CREATE LOGIC (UNCHANGED)
+  // CREATE OBSERVATION
   // ===========================================================================
+
   const date = body.date || "";
   const bird_name = body.bird_name || "";
   const bird_id = body.bird_id || "";
@@ -106,25 +117,24 @@ return res.status(200).json(
   const latitude = safeNum(body.latitude);
   const longitude = safeNum(body.longitude);
 
-const baserowRow = {
-  field_6258635: bird_name,
-  field_6258636: bird_id,
-  field_6258637: action,
-  field_6258639: latitude,
-  field_6258640: longitude,
+  const baserowRow = {
+    field_6258635: bird_name,
+    field_6258636: bird_id,
+    field_6258637: action,
+    field_6258639: latitude,
+    field_6258640: longitude,
 
-  // ✅ LV95 fields
-  field_6913479: safeNum(body.lat_LV95),      // northing
-  field_6913496: safeNum(body.lon_LV95),      // easting
-  field_6913501: safeNum(body.elevation_LV95),
+    // LV95
+    field_6913479: safeNum(body.lat_LV95),
+    field_6913496: safeNum(body.lon_LV95),
+    field_6913501: safeNum(body.elevation_LV95),
 
-  field_6258643: territory,
-  field_6525910: body.field_6525910 || null, // date_manual
-  field_6525920: body.field_6525920 || null, // time_manual
-  field_DELETED: false       // 👈 NEW, safe default
-};
+    field_6258643: territory,
+    field_6525910: body.field_6525910 || null,
+    field_6525920: body.field_6525920 || null,
 
-
+    field_DELETED: false
+  };
 
   try {
     const r = await fetch(BASE_URL, {
@@ -142,6 +152,9 @@ const baserowRow = {
     return res.status(200).json({ ok: true, id: data.id });
 
   } catch (err) {
-    return res.status(500).json({ error: "Server exception", detail: err.toString() });
+    return res.status(500).json({
+      error: "Server exception",
+      detail: err.toString()
+    });
   }
 }
