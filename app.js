@@ -398,7 +398,7 @@ function initMap() {
   });
 
   // ---------------------------
-  // Finde mich
+  // Finde mich (text link)
   // ---------------------------
 
   const findMeEl = document.getElementById("quick-find-me");
@@ -425,8 +425,16 @@ function initMap() {
     };
   }
 
+  // ---------------------------
+  // ✅ SAVE BUTTON (THIS WAS MISSING)
+  // ---------------------------
+
+  const saveBtn = document.getElementById("btn-save-report");
+  if (saveBtn) saveBtn.onclick = saveSelectedReports;
+
   setTimeout(() => map.invalidateSize(), 200);
 }
+
 
 function updateCoords(lat, lng) {
   document.getElementById("report-lat").value = lat.toFixed(10);
