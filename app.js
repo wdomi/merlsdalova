@@ -351,6 +351,7 @@ function initMap() {
 
   const mapDiv = document.getElementById("map");
   mapDiv.innerHTML = "";
+
   if (map) map.remove();
 
   map = L.map("map").setView(DEFAULT_CENTER, 12);
@@ -373,16 +374,18 @@ function initMap() {
 
   updateCoords(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
 
-  // --------------------------------------------------
-  // QUICK LOCATION MAGNETS (right side)
-  // --------------------------------------------------
+  // ---------------------------
+  // Quick location magnets
+  // ---------------------------
 
   document.querySelectorAll(".quick-loc").forEach(el => {
+
     el.style.cursor = "pointer";
     el.style.textDecoration = "underline";
     el.style.color = "#2a4d69";
 
     el.onclick = function () {
+
       const lat = Number(this.dataset.lat);
       const lon = Number(this.dataset.lon);
 
@@ -394,11 +397,12 @@ function initMap() {
     };
   });
 
-  // --------------------------------------------------
-  // FINDE MICH (text above buttons, left side)
-  // --------------------------------------------------
+  // ---------------------------
+  // Finde mich
+  // ---------------------------
 
   const findMeEl = document.getElementById("quick-find-me");
+
   if (findMeEl) {
 
     findMeEl.style.cursor = "pointer";
@@ -406,6 +410,7 @@ function initMap() {
     findMeEl.style.color = "#2a4d69";
 
     findMeEl.onclick = () => {
+
       navigator.geolocation.getCurrentPosition(pos => {
 
         const lat = pos.coords.latitude;
@@ -416,11 +421,13 @@ function initMap() {
         updateCoords(lat, lon);
 
       });
+
     };
   }
 
   setTimeout(() => map.invalidateSize(), 200);
 }
+
 
 
 // --------------------------------------------------------------------
