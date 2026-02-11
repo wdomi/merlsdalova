@@ -588,15 +588,17 @@ function populateLatestDropdown() {
 
 
 
-// RENDERING OBSERVATION BLOBS
+
+// ⚠️ RENDERING OBSERVATION BLOBS
 function renderLatestMap() {
+  if (!latestLayer || !latestMap) return;
+
   latestLayer.clearLayers();
 
   const now = Date.now();
-  const bounds = L.latLngBounds([]);
   let visible = [];
 
-  // 🔎 First collect all visible observations
+  // Collect visible observations
   latestData.forEach(r => {
     if (!r.latitude || !r.longitude || !r.date) return;
     if (latestBirdFilter && r.bird_id !== latestBirdFilter) return;
@@ -609,12 +611,16 @@ function renderLatestMap() {
 
   if (!visible.length) return;
 
-  // 🔥 Find most recent observation
+  // Sort newest first
   visible.sort((a, b) => new Date(b.date) - new Date(a.date));
   const mostRecent = visible[0];
 
-  // 🎨 Render all markers
+  // Render markers
   visible.forEach(r => {
+
+    const lat = Number(r.latitude);
+    const lon = Number(r.longitude);
+    if (isNaN(lat) || isNaN(lon)) return;
 
     const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
@@ -626,11 +632,11 @@ function renderLatestMap() {
 
     const isNewest = r === mostRecent;
 
-    const marker = L.circleMarker([r.latitude, r.longitude], {
-      radius: isNewest ? 14 : 10,              // bigger
+    const marker = L.circleMarker([lat, lon], {
+      radius: isNewest ? 14 : 10,
       fillColor: color,
-      fillOpacity: isNewest ? 1 : opacity,     // full opacity if newest
-      color: isNewest ? "#ffffff" : "transparent", // white border
+      fillOpacity: isNewest ? 1 : opacity,
+      color: isNewest ? "#ffffff" : "transparent",
       weight: isNewest ? 3 : 0
     })
       .bindPopup(
@@ -640,24 +646,19 @@ function renderLatestMap() {
       .addTo(latestLayer);
 
     if (isNewest) {
-      marker.openPopup();        // auto-open popup for newest
-      marker.bringToFront();     // draw above others
+      marker.openPopup();
+      marker.bringToFront();
     }
-
-    bounds.extend([r.latitude, r.longitude]);
   });
 
-  // 🔍 Auto zoom 4 levels into most recent observation 
-const newestLat = mostRecent.latitude;
-const newestLon = mostRecent.longitude;
+  // 🎯 SAFE CENTER + ZOOM (cannot crash)
+  const newestLat = Number(mostRecent.latitude);
+  const newestLon = Number(mostRecent.longitude);
 
-const baseZoom = 14;        // your usual working zoom
-const zoomInLevels = 4;     // zoom 4 times closer
-
-latestMap.setView(
-  [newestLat, newestLon],
-  baseZoom + zoomInLevels
-);
+  if (!isNaN(newestLat) && !isNaN(newestLon)) {
+    latestMap.setView([newestLat, newestLon], 17);
+  }
+}
 
 
 
