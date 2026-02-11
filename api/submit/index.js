@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   if (body.mode === "list") {
     try {
       const r = await fetch(
-        `${BASE_URL}&filter__field_DELETED__equal=false&size=30`,
+        `${BASE_URL}&filter__field_DELETED__equal=false&size=10000`,
         { method: "GET", headers }
       );
 
