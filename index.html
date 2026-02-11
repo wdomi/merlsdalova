@@ -214,6 +214,8 @@
   </table>
 </div>
 
+
+  
 <!-- ===================== REPORT POPUP ===================== -->
 
 <div id="popup-report-bg" class="popup-bg">
@@ -237,15 +239,24 @@
       <input type="number" id="report-lon" step="0.0000000001" placeholder="Longitude">
     </div>
     
-   <!-- Buttons + Quick Locations aligned on same row -->
+ <!-- Buttons + Quick Locations aligned on same row -->
 
 <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
 
-  <!-- LEFT SIDE: Buttons -->
-  <div style="display:flex; gap:6px; flex-wrap:wrap;">
-    <button id="btn-find-me" class="submit-btn submit-btn-ghost">Finde mich</button>
-    <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
-    <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+  <!-- LEFT SIDE -->
+  <div style="display:flex; flex-direction:column; gap:6px;">
+
+    <!-- Finde mich (text style) -->
+    <div id="quick-find-me" class="quick-loc" style="font-size:13px;">
+      Finde mich
+    </div>
+
+    <!-- Buttons row -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
+      <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+    </div>
+
   </div>
 
   <!-- RIGHT SIDE: Location magnets -->
@@ -256,6 +267,7 @@
   </div>
 
 </div>
+
 
   </div>
 </div>
