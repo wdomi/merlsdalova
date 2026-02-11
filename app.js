@@ -590,6 +590,8 @@ function populateLatestDropdown() {
 
 
 // ⚠️ RENDERING OBSERVATION BLOBS
+
+// ⚠️ RENDERING OBSERVATION BLOBS
 function renderLatestMap() {
   if (!latestLayer || !latestMap) return;
 
@@ -615,7 +617,6 @@ function renderLatestMap() {
   visible.sort((a, b) => new Date(b.date) - new Date(a.date));
   const mostRecent = visible[0];
 
-  // Render markers
   visible.forEach(r => {
 
     const lat = Number(r.latitude);
@@ -639,16 +640,18 @@ function renderLatestMap() {
       color: isNewest ? "#ffffff" : "transparent",
       weight: isNewest ? 3 : 0
     })
-  .bindPopup(
-  ` <div>
+    .bindPopup(`
+      <div>
         <strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
         ${r.date}<br>
-        <span style="font-size:11px;color:#c33;cursor:pointer;text-decoration:underline;" onclick="deleteObservation(${r.id})">
-        löschen </span>
-    </div>
-    )
-
-      .addTo(latestLayer);
+        <span
+          style="font-size:11px;color:#c33;cursor:pointer;text-decoration:underline;"
+          onclick="deleteObservation(${r.id})">
+          löschen
+        </span>
+      </div>
+    `)
+    .addTo(latestLayer);
 
     if (isNewest) {
       marker.openPopup();
@@ -656,7 +659,7 @@ function renderLatestMap() {
     }
   });
 
-  // 🎯 SAFE CENTER + ZOOM (cannot crash)
+  // Center on newest safely
   const newestLat = Number(mostRecent.latitude);
   const newestLon = Number(mostRecent.longitude);
 
