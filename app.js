@@ -1,5 +1,5 @@
 /***************************************************************************
- * Merlotschadaua – FULL app.js (UNIFIED REPORT FLOW)
+ * Merlotschadaua – FULL app.js
  **************************************************************************/
 
 console.log("Merlotschadaua app.js loaded");
@@ -393,6 +393,53 @@ function initMap() {
 
   const saveBtn = document.getElementById("btn-save-report");
 if (saveBtn) saveBtn.onclick = saveSelectedReports;
+
+// --------------------------------------------------------------------
+// QUICK LOCATION LINKS (bottom right)
+// --------------------------------------------------------------------
+
+const QuickLocations = L.Control.extend({
+  options: { position: "bottomright" },
+
+  onAdd: function () {
+    const div = L.DomUtil.create("div");
+    div.style.background = "rgba(255,255,255,0.9)";
+    div.style.padding = "6px 8px";
+    div.style.borderRadius = "6px";
+    div.style.fontSize = "13px";
+    div.style.lineHeight = "1.4";
+    div.style.boxShadow = "0 1px 4px rgba(0,0,0,0.2)";
+    div.style.cursor = "pointer";
+
+    div.innerHTML = `
+      <div class="quick-loc" data-lat="46.637634" data-lon="10.181809">obere Spöl</div>
+      <div class="quick-loc" data-lat="46.691645" data-lon="10.125708">untere Spöl</div>
+      <div class="quick-loc" data-lat="46.618562" data-lon="10.351977">Rom</div>
+    `;
+
+    L.DomEvent.disableClickPropagation(div);
+
+    div.querySelectorAll(".quick-loc").forEach(el => {
+      el.style.textDecoration = "underline";
+      el.style.color = "#2a4d69";
+
+      el.onclick = function () {
+        const lat = Number(this.dataset.lat);
+        const lon = Number(this.dataset.lon);
+
+        if (!isNaN(lat) && !isNaN(lon)) {
+          marker.setLatLng([lat, lon]);
+          map.setView([lat, lon], 15);
+          updateCoords(lat, lon);
+        }
+      };
+    });
+
+    return div;
+  }
+});
+
+map.addControl(new QuickLocations());
 
     setTimeout(() => map.invalidateSize(), 200);
 
