@@ -428,66 +428,6 @@ function initMap() {
   setTimeout(() => map.invalidateSize(), 200);
 }
 
-
-
-// --------------------------------------------------------------------
-// QUICK LOCATION LINKS (outside map)
-// --------------------------------------------------------------------
-
-const quickContainer = document.getElementById("quick-locations");
-
-if (quickContainer) {
-  quickContainer.querySelectorAll(".quick-loc").forEach(el => {
-
-    el.style.cursor = "pointer";
-    el.style.textDecoration = "underline";
-    el.style.color = "#2a4d69";
-
-    el.onclick = function () {
-      const lat = Number(this.dataset.lat);
-      const lon = Number(this.dataset.lon);
-
-      if (!isNaN(lat) && !isNaN(lon)) {
-        marker.setLatLng([lat, lon]);
-        map.setView([lat, lon], 15);
-        updateCoords(lat, lon);
-      }
-    };
-  });
-}
-
-  updateCoords(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
-
-  const latEl = document.getElementById("report-lat");
-  const lonEl = document.getElementById("report-lon");
-
-  function applyTypedCoords() {
-    const lat = Number(latEl.value);
-    const lon = Number(lonEl.value);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      marker.setLatLng([lat, lon]);
-      map.setView([lat, lon], map.getZoom());
-    }
-  }
-
-  latEl.onchange = applyTypedCoords;
-  lonEl.onchange = applyTypedCoords;
-
-  document.getElementById("btn-find-me").onclick = () => {
-    navigator.geolocation.getCurrentPosition(pos => {
-      marker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
-      map.setView([pos.coords.latitude, pos.coords.longitude], 15);
-      updateCoords(pos.coords.latitude, pos.coords.longitude);
-    });
-  };
-
-  const saveBtn = document.getElementById("btn-save-report");
-if (saveBtn) saveBtn.onclick = saveSelectedReports;
-
-    setTimeout(() => map.invalidateSize(), 200);
-
-}
-
 function updateCoords(lat, lng) {
   document.getElementById("report-lat").value = lat.toFixed(10);
   document.getElementById("report-lon").value = lng.toFixed(10);
