@@ -413,7 +413,7 @@ async function saveSelectedReports() {
 
 const lat = Number(document.getElementById("report-lat").value);
 const lng = Number(document.getElementById("report-lon").value);
-  // ⚠️ ORDER MATTERS: lat FIRST, lon SECOND
+  // ORDER MATTERS: lat FIRST, lon SECOND
 const lv95 = wgs84ToLV95(lat, lng);
   
   const dateVal = document.getElementById("report-date").value; // YYYY-MM-DD
@@ -639,10 +639,15 @@ function renderLatestMap() {
       color: isNewest ? "#ffffff" : "transparent",
       weight: isNewest ? 3 : 0
     })
-      .bindPopup(
-        `<strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
-         ${r.date}`
-      )
+  .bindPopup(
+  ` <div>
+        <strong>${r.bird_name}</strong> (${r.bird_id || "—"})<br>
+        ${r.date}<br>
+        <span style="font-size:11px;color:#c33;cursor:pointer;text-decoration:underline;" onclick="deleteObservation(${r.id})">
+        löschen </span>
+    </div>
+    )
+
       .addTo(latestLayer);
 
     if (isNewest) {
@@ -698,7 +703,38 @@ function wgs84ToLV95(lat, lon) {
 }
 
 
+// -----------------------------------------------------------------------
+// Funt DELETE LAST OBS on obs popup
+// -----------------------------------------------------------------------
 
+async function deleteObservation(id) {
+  const ok = confirm("Möchtest du wirklich die Beobachtung löschen?");
+  if (!ok) return;
+
+  try {
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "set_deleted",
+        id: id,
+        deleted: true
+      })
+    });
+
+    if (!res.ok) {
+      alert("Fehler beim Löschen.");
+      return;
+    }
+
+    // Reload observations
+    await loadLatest();
+
+  } catch (err) {
+    console.error(err);
+    alert("Serverfehler.");
+  }
+}
 
 
 
