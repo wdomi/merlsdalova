@@ -364,9 +364,31 @@ function initMap() {
   marker.on("dragend", () => {
     const p = marker.getLatLng();
     updateCoords(p.lat, p.lng);
+
+    const findMeEl = document.getElementById("quick-find-me");
+if (findMeEl) {
+  findMeEl.onclick = () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      marker.setLatLng([lat, lon]);
+      map.setView([lat, lon], 15);
+      updateCoords(lat, lon);
+    });
+  };
+}
+
+  document.querySelectorAll(".quick-loc").forEach(el => {
+  el.style.cursor = "pointer";
+  el.style.textDecoration = "underline";
+  el.style.color = "#2a4d69";
   });
 
-  // --------------------------------------------------------------------
+  });
+
+
+// --------------------------------------------------------------------
 // QUICK LOCATION LINKS (outside map)
 // --------------------------------------------------------------------
 
