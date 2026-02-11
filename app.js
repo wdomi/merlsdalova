@@ -296,6 +296,7 @@ if (searchEl) {
   };
 }
 
+
 // ------------------------------------------------------------------------
 // REPORT POPUP + MAP
 // ------------------------------------------------------------------------
@@ -316,28 +317,27 @@ function openReportPopup() {
 
   window._pendingSelections = entries;
 
-const infoEl = document.getElementById("popup-bird-info");
+  const infoEl = document.getElementById("popup-bird-info");
 
-if (entries.length === 1) {
-  const b = entries[0].bird;
-  infoEl.textContent =
-    b.bird_id
-      ? `${b.name} (${b.bird_id})`
-      : "Unberingter Vogel";
-} else {
-  const names = entries.map(e => {
-    const b = e.bird;
-    return b.bird_id ? `${b.name} (${b.bird_id})` : "Unberingt";
-  });
+  if (entries.length === 1) {
+    const b = entries[0].bird;
+    infoEl.textContent =
+      b.bird_id
+        ? `${b.name} (${b.bird_id})`
+        : "Unberingter Vogel";
+  } else {
+    const names = entries.map(e => {
+      const b = e.bird;
+      return b.bird_id ? `${b.name} (${b.bird_id})` : "Unberingt";
+    });
 
-  infoEl.innerHTML = `
-    <strong>${entries.length} Vögel ausgewählt:</strong>
-    <ul style="margin:6px 0 0 16px; padding:0;">
-      ${names.map(n => `<li>${n}</li>`).join("")}
-    </ul>
-  `;
-}
-
+    infoEl.innerHTML = `
+      <strong>${entries.length} Vögel ausgewählt:</strong>
+      <ul style="margin:6px 0 0 16px; padding:0;">
+        ${names.map(n => `<li>${n}</li>`).join("")}
+      </ul>
+    `;
+  }
 
   const now = new Date();
   document.getElementById("report-date").value = now.toISOString().slice(0,10);
@@ -348,44 +348,79 @@ if (entries.length === 1) {
 }
 
 function initMap() {
+
   const mapDiv = document.getElementById("map");
   mapDiv.innerHTML = "";
   if (map) map.remove();
 
   map = L.map("map").setView(DEFAULT_CENTER, 12);
 
-  L.tileLayer("https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=hTUZRiAhto38o94bZonV", {
-    maxZoom: 20,
-    tileSize: 512,
-    zoomOffset: -1
-  }).addTo(map);
+  L.tileLayer(
+    "https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=hTUZRiAhto38o94bZonV",
+    {
+      maxZoom: 20,
+      tileSize: 512,
+      zoomOffset: -1
+    }
+  ).addTo(map);
 
   marker = L.marker(DEFAULT_CENTER, { draggable: true }).addTo(map);
+
   marker.on("dragend", () => {
     const p = marker.getLatLng();
     updateCoords(p.lat, p.lng);
+  });
 
-    const findMeEl = document.getElementById("quick-find-me");
-if (findMeEl) {
-  findMeEl.onclick = () => {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
+  updateCoords(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
 
-      marker.setLatLng([lat, lon]);
-      map.setView([lat, lon], 15);
-      updateCoords(lat, lon);
-    });
-  };
-}
+  // --------------------------------------------------
+  // QUICK LOCATION MAGNETS (right side)
+  // --------------------------------------------------
 
   document.querySelectorAll(".quick-loc").forEach(el => {
-  el.style.cursor = "pointer";
-  el.style.textDecoration = "underline";
-  el.style.color = "#2a4d69";
+    el.style.cursor = "pointer";
+    el.style.textDecoration = "underline";
+    el.style.color = "#2a4d69";
+
+    el.onclick = function () {
+      const lat = Number(this.dataset.lat);
+      const lon = Number(this.dataset.lon);
+
+      if (!isNaN(lat) && !isNaN(lon)) {
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], 15);
+        updateCoords(lat, lon);
+      }
+    };
   });
 
-  });
+  // --------------------------------------------------
+  // FINDE MICH (text above buttons, left side)
+  // --------------------------------------------------
+
+  const findMeEl = document.getElementById("quick-find-me");
+  if (findMeEl) {
+
+    findMeEl.style.cursor = "pointer";
+    findMeEl.style.textDecoration = "underline";
+    findMeEl.style.color = "#2a4d69";
+
+    findMeEl.onclick = () => {
+      navigator.geolocation.getCurrentPosition(pos => {
+
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], 15);
+        updateCoords(lat, lon);
+
+      });
+    };
+  }
+
+  setTimeout(() => map.invalidateSize(), 200);
+}
 
 
 // --------------------------------------------------------------------
