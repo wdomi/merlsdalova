@@ -647,13 +647,17 @@ function renderLatestMap() {
     bounds.extend([r.latitude, r.longitude]);
   });
 
-  // 🔍 Auto zoom
-  if (visible.length === 1) {
-    latestMap.setView(bounds.getCenter(), 16);
-  } else {
-    latestMap.fitBounds(bounds, { padding: [30, 30] });
-  }
-}
+  // 🔍 Auto zoom 4 levels into most recent observation 
+const newestLat = mostRecent.latitude;
+const newestLon = mostRecent.longitude;
+
+const baseZoom = 14;        // your usual working zoom
+const zoomInLevels = 4;     // zoom 4 times closer
+
+latestMap.setView(
+  [newestLat, newestLon],
+  baseZoom + zoomInLevels
+);
 
 
 
