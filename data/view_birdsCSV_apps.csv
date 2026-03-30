@@ -12,7 +12,7 @@
 "S228.010","whi/bla - red/alu","white","black","red","alu","SP2513","Unterste","Bebbi","M","2","4770","2025-05-01"
 "S228.011","gre/alu - yel/whi","green","alu","yellow","white","SP2513","Unterste","Ursina","F","2","4770","2025-05-01"
 "S228.012","alu/bla - yel/bla","alu","black","yellow","black","SP2516","Höhli","Zoe","F","2","3050","2025-05-02"
-"S228.013","alu/red - yel/gre","alu","red","yellow","green","US2504put",NULL,"Kai","M","2","3460",NULL
+"S228.013","alu/red - yel/gre","alu","red","yellow","green","US2504",US,"Kai","M","2","3460",NULL
 "S228.014","alu/pin - yel/pin","alu","pink","yellow","pink","SP2402","Wehr","Wehrli","U","0","430","2025-05-12"
 "S228.015","alu/pin - yel/red","alu","pink","yellow","red","SP2402","Wehr","Wehrlino","U","0","430","2025-05-12"
 "S228.016","alu/pin - yel/whi","alu","pink","yellow","white","SP2402","Wehr","Wehrletto","U","0","430","2025-05-12"
