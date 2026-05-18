@@ -40,4 +40,7 @@
 "S228.038","pin/vio - blu/alu","pink","violet","blue","alu","SP2515","kleine Eier","Furia","U","2","3750","2025-11-12"
 "S228.039","red/alu - red/whi","red","alu","red","white","SP2515","kleine Eier","Carlo","U",NULL,"3750","2025-11-12"
 "S228.050","red/red - alu/yel","red","red","alu","yel","US2530","Laschadura","Alice","F",3,"US","2026-05-13"
+"S228.051","alu/blu - red/red","alu","blu","red","red","US2530","Laschadura","JV1","U",0,"US","2026-05-16"
+"S228.052","vio/alu - red/red","vio","alu","red","red","US2530","Laschadura","JV2","U",0,"US","2026-05-16"
+"S228.053","yel/alu - red/red","yel","alu","red","red","US2530","Laschadura","JV3","U",0,"US","2026-05-16"
 "S228.051","vio/vio - vio/alu","vio","vio","vio","alu","US2582","Holzbrücke","Iris","F",2,"US","2026-05-13"
