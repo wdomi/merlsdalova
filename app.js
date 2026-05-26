@@ -226,19 +226,17 @@ function renderBirds() {
       <td>${b.name}<div class="tag">${b.bird_id}</div></td>
       <td>${b.sex}<br>${b.age}</td>
       <td>${b.territory} (${b.dist})<br>${b.banded_on}</td>
-<td>
-  <div style="display:flex; gap:16px;">
-    <div>
-      ${colorPill(b.L_top)}<br>
-      ${colorPill(b.L_bottom)}
-    </div>
 
-    <div>
-      ${colorPill(b.R_top)}<br>
-      ${colorPill(b.R_bottom)}
-    </div>
+<td>
+  <div style="display:grid; grid-template-columns:auto auto; column-gap:16px;">
+    <div>${colorPill(b.L_top) || ""}</div>
+    <div>${colorPill(b.R_top) || ""}</div>
+
+    <div>${colorPill(b.L_bottom) || ""}</div>
+    <div>${colorPill(b.R_bottom) || ""}</div>
   </div>
 </td>
+
 <td>
         <button
           class="submit-btn submit-btn-ghost action-btn ${act==="sighted" ? "selected-action" : ""}"
