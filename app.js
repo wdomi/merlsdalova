@@ -209,7 +209,17 @@ function colorPill(c) {
   if (!c) return "";
   const hex = COLOR_PALETTE[c] || "#777";
   const text = c === "white" ? "#000" : "#fff";
-  return `<span style="background:${hex};color:${text};padding:2px 4px;border-radius:4px;font-size:11px;">${c.slice(0,3)}</span>`;
+  return `<span style="
+      background:${hex};
+      color:${text};
+      padding:1px 3px;
+      border-radius:3px;
+      font-size:10px;
+      line-height:1;
+      display:inline-block;
+    ">
+      ${c.slice(0,3)}
+      </span>`;
 }
 
 function renderBirds() {
