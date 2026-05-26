@@ -1,4 +1,4 @@
-bird_id,mark_color,L_top,L_bottom,R_top,R_bottom,territory,territory_name,name,sex,age,dist Punt dal Gal (m),banded_on
+bird_id,mark_color,L_top,L_bottom, R_top,R_bottom, territory,territory_name,name,sex,age,dist Punt dal Gal (m),banded_on
 NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,unberingt,U,U,NULL,NULL
 S228.001,yel/bla - alu/yel,yellow,black,alu,yellow,SP2402,Wehr,Johann,M,U,430,NULL
 S228.002,gre/alu - red/whi,green,alu,red,white,SP2402,Wehr,Liseli,F,U,430,NULL
