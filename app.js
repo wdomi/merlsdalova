@@ -1,5 +1,5 @@
 /***************************************************************************
- * Merlotschadaua – FULL app.js
+ * Merls da l'Ova – FULL app.js
  **************************************************************************/
 
 console.log("Merlotschadaua app.js loaded");
