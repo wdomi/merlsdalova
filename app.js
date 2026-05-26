@@ -137,10 +137,10 @@ function parseCSV(text) {
       name: cols[idx("name")] || "",
       sex: cols[idx("sex")] || "",
       age: cols[idx("age")] || "",
-      R_top: (cols[idx("r_top")] || "").toLowerCase(),
-      R_bottom: (cols[idx("r_bottom")] || "").toLowerCase(),
       L_top: (cols[idx("l_top")] || "").toLowerCase(),
       L_bottom: (cols[idx("l_bottom")] || "").toLowerCase(),
+      R_top: (cols[idx("r_top")] || "").toLowerCase(),
+      R_bottom: (cols[idx("r_bottom")] || "").toLowerCase(),
       territory: cols[idx("territory_name")] || "",
       dist: cols[idx("dist punt dal gal (m)")] || "",
       banded_on: cols[idx("banded_on")] || ""
@@ -153,7 +153,7 @@ function parseCSV(text) {
 // ------------------------------------------------------------------------
 
 function buildColorButtons() {
-  ["right", "left"].forEach(side => {
+  ["left" , "right"].forEach(side => {
     const el = document.getElementById(side + "-leg");
     el.innerHTML = "";
 
@@ -170,7 +170,7 @@ function buildColorButtons() {
 }
 
 function toggleColor(side, color, btn) {
-  const arr = side === "right" ? selectedRight : selectedLeft;
+  const arr = side === "left" ? selectedLeft : selectedRight;
 
   if (arr.includes(color)) {
     arr.splice(arr.indexOf(color), 1);
@@ -189,12 +189,12 @@ function toggleColor(side, color, btn) {
 
 function birdMatches(b) {
   // ring color filtering (existing logic)
-  const R = [b.R_top, b.R_bottom].filter(Boolean);
   const L = [b.L_top, b.L_bottom].filter(Boolean);
+  const R = [b.R_top, b.R_bottom].filter(Boolean);
 
-  if (!selectedRight.every(c => R.includes(c))) return false;
   if (!selectedLeft.every(c => L.includes(c))) return false;
-
+  if (!selectedRight.every(c => R.includes(c))) return false;
+  
   // 🔍 text search (NEW)
   if (birdSearchQuery) {
     const haystack = `${b.name} ${b.bird_id}`.toLowerCase();
@@ -226,8 +226,20 @@ function renderBirds() {
       <td>${b.name}<div class="tag">${b.bird_id}</div></td>
       <td>${b.sex}<br>${b.age}</td>
       <td>${b.territory} (${b.dist})<br>${b.banded_on}</td>
-      <td>${colorPill(b.R_top)}/${colorPill(b.R_bottom)} ${colorPill(b.L_top)}/${colorPill(b.L_bottom)}</td>
-      <td>
+<td>
+  <div style="display:flex; gap:16px;">
+    <div>
+      ${colorPill(b.L_top)}<br>
+      ${colorPill(b.L_bottom)}
+    </div>
+
+    <div>
+      ${colorPill(b.R_top)}<br>
+      ${colorPill(b.R_bottom)}
+    </div>
+  </div>
+</td>
+<td>
         <button
           class="submit-btn submit-btn-ghost action-btn ${act==="sighted" ? "selected-action" : ""}"
           data-id="${b.bird_id}"
