@@ -43,4 +43,8 @@ S228.050,alu/yel - red/red,alu,yellow,red,red,US2530,Laschadura,Alice,F,3,US,13.
 S228.051,red/red - alu/blu,red,red,alu,blue,US2530,Laschadura,JV1,U,0,US,16.05.2026
 S228.052,red/red - vio/alu,red,red,violet,alu,US2530,Laschadura,JV2,U,0,US,16.05.2026
 S228.053,red/red - yel/alu,red,red,yellow,alu,US2530,Laschadura,JV3,U,0,US,16.05.2026
-S228.051,vio/alu - vio/vio,violet,alu,violet,violet,US2582,Holzbrücke,Iris,F,2,US,13.05.2026
+S228.054,vio/alu - vio/vio,violet,alu,violet,violet,US2582,Holzbrücke,Iris,F,2,US,13.05.2026
+S228.055,blu/bla - alu/pin,blue,black,alu,pink,SP2402,Wehr,JV1,,0,430,09.06.2026
+S228.056,alu/gre - yel/vio,alu,green,yellow,violet,SP2402,Wehr,JV2,,0,430,09.06.2026
+S228.057,pin/alu - blu/yel,pink,alu,blue,yellow,SP2402,Wehr,JV3,,0,430,09.06.2026
+
