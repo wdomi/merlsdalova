@@ -70,7 +70,10 @@ async function flushOfflineQueue() {
 
 const ACTION_IDS = {
   sighted: 4519311,
-  maybe: 4519312
+  maybe: 4519312,
+  catch: 6470432,
+  nest_ringing: 6470433,
+  dead_find: 6470434
 };
 
 const COLOR_PALETTE = {
@@ -259,6 +262,24 @@ function renderBirds() {
           data-id="${b.bird_id}"
           data-action="maybe">
           unsicher
+        </button>
+        <button
+          class="submit-btn submit-btn-ghost action-btn ${act==="catch" ? "selected-action" : ""}"
+          data-id="${b.bird_id}"
+          data-action="catch">
+          gefangen
+        </button>
+        <button
+          class="submit-btn submit-btn-ghost action-btn ${act==="nest_ringing" ? "selected-action" : ""}"
+          data-id="${b.bird_id}"
+          data-action="nest_ringing">
+          Nest_Beringung
+        </button>
+        <button
+          class="submit-btn submit-btn-ghost action-btn ${act==="dead_find" ? "selected-action" : ""}"
+          data-id="${b.bird_id}"
+          data-action="dead_find">
+          Totfund
         </button>
       </td>
     `;
