@@ -5,9 +5,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Map DB color strings to your UI palette keys
+const COLOR_MAP = {
+  alu: "alu",
+  white: "white",
+  black: "black",
+  yellow: "yellow",
+  red: "red",
+  blue: "blue",
+  green: "green",
+  pink: "pink",
+  violet: "violet"
+};
+
 export default async function handler(req, res) {
   try {
-    // 1. Fetch ONLY from the 'individual' table. No joins.
+    // 1. Fetch individuals WITH joins to ref.rings and sex_categories
+    // Syntax: alias:foreign_key_column ( column_you_want )
     const { data: individuals, error } = await supabase
       .from("individual")
       .select(`
@@ -15,11 +29,15 @@ export default async function handler(req, res) {
         ring_number,
         name,
         age_at_ringing,
-        sex_id,
-        ring_L_t,
-        ring_L_b,
-        ring_R_t,
-        ring_R_b
+        
+        -- Join Sex Category (Adjust 'sex_categories' if your table name differs)
+        sex_id ( code ), 
+        
+        -- Join Ring Colors from ref.rings table
+        ring_L_t ( color ),
+        ring_L_b ( color ),
+        ring_R_t ( color ),
+        ring_R_b ( color )
       `)
       .order("ring_number");
 
@@ -28,25 +46,36 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: error.message });
     }
 
-    // 2. Simple Mapping
+    // 2. Map the nested data to flat objects for the frontend
     const birds = (individuals || []).map(b => {
       
-      // Helper to handle potential nulls
-      const getVal = (val) => (val === null ? "" : String(val));
+      // Helper to safely extract color name from the joined object
+      // b.ring_L_t is now an object like { color: "red" }, not a number
+      const getColor = (ringObj) => {
+        if (!ringObj || !ringObj.color) return "";
+        return COLOR_MAP[ringObj.color] || ringObj.color;
+      };
+
+      // Helper to safely extract sex code
+      const getSex = (sexObj) => {
+        // If sex_id returns an array (one-to-many), take the first item
+        const sexData = Array.isArray(sexObj) ? sexObj[0] : sexObj;
+        return sexData?.code || "U";
+      };
 
       return {
         individual_id: b.id,
         bird_id: b.ring_number || "",
         name: b.name || "",
-        sex: b.sex_id ? String(b.sex_id) : "U", // Temporarily show ID if no join
+        
+        sex: getSex(b.sex_id),
         age: b.age_at_ringing || "",
 
-        // Directly pass the value from the DB. 
-        // If your DB stores "red", this works. If it stores "3", we fix in Step 2.
-        L_top: getVal(b.ring_L_t),
-        L_bottom: getVal(b.ring_L_b),
-        R_top: getVal(b.ring_R_t),
-        R_bottom: getVal(b.ring_R_b)
+        // Extract color from the joined objects
+        L_top: getColor(b.ring_L_t),
+        L_bottom: getColor(b.ring_L_b),
+        R_top: getColor(b.ring_R_t),
+        R_bottom: getColor(b.ring_R_b)
       };
     });
 
