@@ -545,7 +545,9 @@ const payload = {
   date: dateVal,
   time_manual: timeVal,
 
-  observer: observerId
+  observer: Number(
+    document.getElementById("observer-select").value
+  )
 };
 
     try {
