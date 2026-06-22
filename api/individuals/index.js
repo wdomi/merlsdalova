@@ -1,3 +1,4 @@
+// v2 - force rebuild
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
