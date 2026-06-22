@@ -181,6 +181,10 @@ function renderBirds() {
   birds.filter(birdMatches).forEach(b => {
     const currentAction = perBirdSelection.get(b.bird_id) || "";
     const tr = document.createElement("tr");
+    
+    // Determine if we should add the dark class immediately
+    const hasValueClass = currentAction ? "action-select has-value" : "action-select";
+
     tr.innerHTML = `
       <td><div style="font-weight:600;">${b.name || ""}</div><div style="font-size:11px; color:#666;">${b.bird_id || ""}</div></td>
       <td>${b.sex || "?"}<br>${b.age || ""}</td>
@@ -192,7 +196,7 @@ function renderBirds() {
         </div>
       </td>
       <td>
-        <select class="action-select" data-id="${b.bird_id}" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; min-width: 130px;">
+        <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; min-width: 130px; transition: all 0.2s;">
           <option value="">Aktion...</option>
           <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beobachtet</option>
           <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsicher</option>
@@ -205,10 +209,27 @@ function renderBirds() {
     body.appendChild(tr);
   });
 
+  // Re-bind events and ensure class is correct on change
   document.querySelectorAll(".action-select").forEach(select => {
+    // Function to update class based on value
+    const updateStyle = () => {
+      if (select.value) {
+        select.classList.add("has-value");
+      } else {
+        select.classList.remove("has-value");
+      }
+    };
+
+    // Run once on load (in case value was pre-selected)
+    updateStyle();
+
+    // Run on change
     select.onchange = function() {
       const id = this.dataset.id;
       const action = this.value;
+      
+      updateStyle(); // Apply dark style immediately
+
       if (!action) perBirdSelection.delete(id);
       else perBirdSelection.set(id, action);
     };
