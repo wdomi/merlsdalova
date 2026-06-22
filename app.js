@@ -513,20 +513,17 @@ const timeVal = document.getElementById("report-time").value || ""; // HH:MM or 
     }
 
 const payload = {
-  bird_name: entry.bird.name || "",
-  bird_id: entry.bird.bird_id || "",
-  action: actionId,
+  individual_id: entry.bird.individual_id,
+
+  action: entry.action,
+
   latitude: lat,
   longitude: lng,
 
-  // ✅ LV95 coordinates
-  lat_LV95: lv95.north,
-  lon_LV95: lv95.east,
-  elevation_LV95: lv95.height,
+  date: dateVal,
+  time_manual: timeVal,
 
-  territory: entry.bird.territory || "",
-  field_6525910: dateVal,
-  field_6525920: timeVal
+  observer: observerId
 };
 
     try {
