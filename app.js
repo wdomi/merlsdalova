@@ -97,13 +97,35 @@ const COLOR_ORDER = [
 // ------------------------------------------------------------------------
 
 window.addEventListener("load", () => {
-  loadCSV();
+  loadIndividuals();;
   setupButtons();
   flushOfflineQueue();
 });
 
 // ------------------------------------------------------------------------
-// CSV
+// load from Supabase "individual" table
+// ------------------------------------------------------------------------
+
+async function loadIndividuals() {
+  try {
+
+    const r = await fetch("/api/individuals");
+
+    birds = await r.json();
+
+    buildColorButtons();
+    renderBirds();
+
+  } catch (err) {
+
+    console.error(err);
+    alert("Bird list could not be loaded.");
+
+  }
+}
+
+// ------------------------------------------------------------------------
+// CSV -- deprecated
 // ------------------------------------------------------------------------
 
 function loadCSV() {
