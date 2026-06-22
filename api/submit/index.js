@@ -67,22 +67,32 @@ export default async function handler(req, res) {
   // =========================
   // INSERT
   // =========================
+try {
 
-.insert({
-  date: body.field_6525910,
-  latitude: body.latitude,
-  longitude: body.longitude,
-
-  action: body.action,
-  capture_method,
-
-  deleted: false
-});
-  
+  const { error } = await supabase
+    .from("ind_observation")
+    .insert({
+      date: body.field_6525910,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      action: body.action,
+      capture_method,
+      deleted: false
+    });
 
   if (error) {
+    console.error("SUPABASE ERROR:", error);
     return res.status(500).json({ error: error.message });
   }
 
   return res.status(200).json({ ok: true });
+
+} catch (err) {
+
+  console.error("SERVER ERROR:", err);
+
+  return res.status(500).json({
+    error: err.toString()
+  });
+
 }
