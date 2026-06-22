@@ -1,4 +1,6 @@
 {
+  "name": "dipper-finder",
+  "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.56.0"
   }
