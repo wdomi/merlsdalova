@@ -69,11 +69,11 @@ async function flushOfflineQueue() {
 // ------------------------------------------------------------------------
 
 const ACTION_IDS = {
-  sighted: 4519311,
-  maybe: 4519312,
-  catch: 6470432,
-  nest_ringing: 6470433,
-  dead_find: 6470434
+  sighted: "sighted",
+  maybe: "maybe",
+  catch: "catch",
+  nest_ringing: "nest_ringing",
+  dead_find: "dead_find"
 };
 
 const COLOR_PALETTE = {
@@ -706,8 +706,8 @@ function renderLatestMap() {
     const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
 
     const color =
-      r.action === 4519311 ? "#3b82f6" :
-      r.action === 4519312 ? "#f59e0b" :
+      r.action === "sighted" ? "#3b82f6" :
+      r.action === "sighted" ? "#f59e0b" :
       "#999";
 
     const isNewest = r === mostRecent;
