@@ -536,10 +536,10 @@ const payload = {
         await sendToServer(payload);
       }
     } catch (err) {
-      console.error("Save failed:", err);
-      alert("Fehler beim Speichern.");
-      return;
-    }
+  console.error("Save failed:", err);
+  alert("Fehler beim Speichern:\n\n" + err.message);
+  return;
+}
   }
 
   closePopup("popup-report-bg");
