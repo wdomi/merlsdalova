@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
   const capture_method =
     captureMethodMap[body.action] || 1;
-
+console.log("BODY:", JSON.stringify(body));
   // =========================
   // INSERT
   // =========================
