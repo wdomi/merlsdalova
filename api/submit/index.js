@@ -72,13 +72,21 @@ try {
   const { error } = await supabase
     .from("ind_observation")
     .insert({
-      date: body.field_6525910,
-      latitude: body.latitude,
-      longitude: body.longitude,
-      action: body.action,
-      capture_method,
-      deleted: false
-    });
+  individual_id: body.individual_id,
+
+  date: body.date,
+  time_manual: body.time_manual,
+
+  latitude: body.latitude,
+  longitude: body.longitude,
+
+  action: body.action,
+  capture_method,
+
+  observer: body.observer,
+
+  deleted: false
+});
 
   if (error) {
     console.error("SUPABASE ERROR:", error);
