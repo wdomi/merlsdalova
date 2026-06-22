@@ -218,85 +218,67 @@
   
 <!-- ===================== REPORT POPUP ===================== -->
 
+<!-- ===================== REPORT POPUP ===================== -->
+
 <div id="popup-report-bg" class="popup-bg">
   <div class="popup">
-    
-<!-- Inside the popup-report-bg div, after the <h3> and <p> tags -->
-<h3>Beobachtung melden</h3>
-<p id="popup-bird-info"></p>
-
-<!-- ✅ ADD THIS DROPDOWN -->
-<div class="field-row" style="margin-bottom: 10px;">
-  <label for="observer-select" style="font-size: 13px; font-weight: 600; width: 100%;">Beobachter:</label>
-  <select id="observer-select" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
-    <option value="7">Claudio</option>
-    <option value="9">Claudia</option>
-    <option value="10">Curdin</option>
-    <option value="3" selected>Dominique</option>
-    <option value="8">Fadri B</option>
-    <option value="5">Glauco</option>
-    <option value="4">Iris</option>
-    <option value="2">Lukas</option>
-    <option value="13">other</option>
-    <option value="6">Steivan</option>
-  </select>
-</div>
-<!-- ✅ END DROPDOWN -->
-
-<div class="field-row">
-  <input type="date" id="report-date">
-  <!-- ... rest of the form ... -->
-
     <h3>Beobachtung melden</h3>
     <p id="popup-bird-info"></p>
 
+    <!-- 1. OBSERVER DROPDOWN (Full Width) -->
+    <div class="field-row" style="margin-bottom: 10px;">
+      <label for="observer-select" style="font-size: 13px; font-weight: 600; width: 100%;">Beobachter:</label>
+      <select id="observer-select" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+        <option value="7">Claudio</option>
+        <option value="9">Claudia</option>
+        <option value="10">Curdin</option>
+        <option value="3" selected>Dominique</option>
+        <option value="8">Fadri B</option>
+        <option value="5">Glauco</option>
+        <option value="4">Iris</option>
+        <option value="2">Lukas</option>
+        <option value="13">other</option>
+        <option value="6">Steivan</option>
+      </select>
+    </div>
+
+    <!-- 2. DATE & TIME (Wrapped in their own container) -->
+    <div class="datetime-row" style="display: flex; gap: 6px; margin-bottom: 10px;">
+      <input type="date" id="report-date" style="flex: 1; padding: 6px;">
+      <input type="time" id="report-time" step="1" style="flex: 1; padding: 6px;">
+    </div>
+
+    <!-- 3. MAP -->
+    <div id="map" style="height: 260px; border-radius: 8px; margin-bottom: 10px;"></div>
+
+    <!-- 4. MANUAL COORDINATES -->
     <div class="field-row">
-      <input type="date" id="report-date">
-      <input type="time" id="report-time" step="1">
-    </div>
-    
-
-<!-- MAP -->
-    
-    <div id="map"></div>
-    
-    <!-- Add manual coordinates -->
-    
-    <div class="field-row">
-      <input type="number" id="report-lat" step="0.0000000001" placeholder="Latitude">
-      <input type="number" id="report-lon" step="0.0000000001" placeholder="Longitude">
-    </div>
-    
- <!-- Buttons + Quick Locations aligned on same row -->
-
-<div style="margin-top:8px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-
-  <!-- LEFT SIDE -->
-  <div style="display:flex; flex-direction:column; gap:6px;">
-
-    <!-- Finde mich (text style) -->
-    <div id="quick-find-me" class="quick-loc" style="font-size:13px;">
-      Finde mich
+      <input type="number" id="report-lat" step="0.0000000001" placeholder="Latitude" style="flex: 1; padding: 4px;">
+      <input type="number" id="report-lon" step="0.0000000001" placeholder="Longitude" style="flex: 1; padding: 4px;">
     </div>
 
-    <!-- Buttons row -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-      <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
-      <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+    <!-- 5. BOTTOM ACTIONS (Find Me + Buttons + Locations) -->
+    <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+      
+      <!-- Left Side: Find Me + Save Button -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div id="quick-find-me" style="font-size: 13px; text-decoration: underline; color: #2a4d69; cursor: pointer;">
+          Finde mich
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
+          <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+        </div>
+      </div>
+
+      <!-- Right Side: Quick Locations -->
+      <div id="quick-locations" style="font-size: 13px; text-align: right; line-height: 1.6;">
+        <div class="quick-loc" data-lat="46.637634" data-lon="10.181809" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">obere Spöl</div>
+        <div class="quick-loc" data-lat="46.691645" data-lon="10.125708" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">untere Spöl</div>
+        <div class="quick-loc" data-lat="46.618562" data-lon="10.351977" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">Rom</div>
+      </div>
+
     </div>
-
-  </div>
-
-  <!-- RIGHT SIDE: Location magnets -->
-  <div id="quick-locations" style="font-size:13px; text-align:right;">
-    <div class="quick-loc" data-lat="46.637634" data-lon="10.181809">obere Spöl</div>
-    <div class="quick-loc" data-lat="46.691645" data-lon="10.125708">untere Spöl</div>
-    <div class="quick-loc" data-lat="46.618562" data-lon="10.351977">Rom</div>
-  </div>
-
-</div>
-
-
   </div>
 </div>
 
