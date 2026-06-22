@@ -79,7 +79,7 @@ export default async function handler(req, res) {
     const payload = {
       individual_id: body.individual_id || null, // Allow null for unringed
       date: body.date,
-      time_manual: body.time_manual || null,
+      time: body.time || null,
       latitude: body.latitude,
       longitude: body.longitude,
       action: actionValue,
