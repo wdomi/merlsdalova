@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const { data: rings } = await supabase
       .schema("ref")
       .from("rings")
-      .select("id, code");
+      .select("id, color");
 
     const { data: sexes } = await supabase
       .schema("ref")
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
     const ringMap = {};
     (rings || []).forEach(r => {
-      ringMap[r.id] = COLOR_MAP[r.code] || r.code;
+      ringMap[r.id] = COLOR_MAP[r.color] || r.color;
     });
 
     const sexMap = {};
