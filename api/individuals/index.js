@@ -44,20 +44,31 @@ export default async function handler(req, res) {
       .from("rings")
       .select("id, code");
 
+    const { data: sexes } = await supabase
+      .schema("ref")
+      .from("sex_categories")
+      .select("id, code");
+
     const ringMap = {};
     (rings || []).forEach(r => {
       ringMap[r.id] = COLOR_MAP[r.code] || r.code;
     });
 
+    const sexMap = {};
+    (sexes || []).forEach(s => {
+      sexMap[s.id] = s.code;
+    });
+
     const birds = (individuals || []).map(b => ({
+      // used when saving observations
       individual_id: b.id,
 
-      // visual identifier
+      // shown in UI
       bird_id: b.ring_number || "",
 
       name: b.name || "",
 
-      sex: b.sex_id || "",
+      sex: sexMap[b.sex_id] || "U",
 
       age: b.age_at_ringing || "",
 
