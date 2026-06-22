@@ -1,5 +1,4 @@
-// v2 - force rebuild
-import { createClient } from "@supabase/supabase-js";
+// FORCE REBUILD v3 - 2026-06-22import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
