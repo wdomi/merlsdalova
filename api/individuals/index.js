@@ -14,74 +14,67 @@ const SEX_MAP = { 1: "U", 2: "F", 3: "M" };
 
 export default async function handler(req, res) {
   try {
-    // STEP 1: Fetch ONLY individual data (NO JOINS). This is guaranteed to work.
+    // 1. Fetch Individuals
     const { data: individuals, error: indError } = await supabase
       .from("individual")
       .select("id, ring_number, name, age_at_ringing, sex_id, ringed_date, nest_ringing, ring_L_t, ring_L_b, ring_R_t, ring_R_b")
       .order("ring_number");
 
-    if (indError) {
-      console.error("❌ Basic Fetch Failed:", indError);
-      return res.status(500).json({ error: indError.message });
-    }
+    if (indError) throw indError;
 
-    // STEP 2: Get Ring Colors (Safe Fallback)
+    // 2. Collect Ring IDs
     const ringIds = new Set();
     individuals.forEach(b => {
       [b.ring_L_t, b.ring_L_b, b.ring_R_t, b.ring_R_b].forEach(id => {
-        if (id) ringIds.add(id);
+        if (id !== null && id !== undefined) ringIds.add(id);
       });
     });
 
     let ringColorsMap = {};
+
     if (ringIds.size > 0) {
-      // Try ref.rings first
-      let { data: ringsData } = await supabase.schema('ref').from('rings').select('id, color').in('id', Array.from(ringIds));
-      // Fallback to public.rings
-      if (!ringsData || ringsData.length === 0) {
-        const { data: publicData } = await supabase.from('rings').select('id, color').in('id', Array.from(ringIds));
-        ringsData = publicData;
-      }
-      if (ringsData) {
+      console.log("🔍 Fetching colors for IDs:", Array.from(ringIds));
+
+      // 3. Fetch from ref.rings EXPLICITLY
+      const { data: ringsData, error: ringsError } = await supabase
+        .schema('ref') // Explicitly set schema
+        .from('rings') // Table name
+        .select('id, color, name, code') // Select multiple possible column names
+        .in('id', Array.from(ringIds));
+
+      if (ringsError) {
+        console.error("❌ Error fetching ref.rings:", ringsError.message);
+      } else if (ringsData) {
+        console.log("✅ Found rings data:", ringsData);
         ringsData.forEach(r => {
-          ringColorsMap[r.id] = COLOR_MAP[r.color || r.name] || (r.color || r.name);
+          // Try 'color' first, then 'name', then 'code'
+          const rawColor = r.color || r.name || r.code;
+          if (rawColor) {
+            ringColorsMap[r.id] = COLOR_MAP[rawColor] || rawColor;
+          }
         });
+      } else {
+        console.warn("⚠️ No rings data found for these IDs.");
       }
     }
 
-    // STEP 3: Try to Fetch Site Data SEPARATELY (Non-Critical)
-    // We do this separately so if it fails, the bird list still loads.
-    const siteIds = individuals
-      .map(b => b.nest_ringing)
-      .filter(id => id !== null && id !== undefined);
-
+    // 4. Fetch Site Data (Non-Critical)
+    const siteIds = individuals.map(b => b.nest_ringing).filter(id => id);
     let siteMap = {};
     if (siteIds.length > 0) {
       try {
-        // Adjust 'site' and column names if your table is named differently
-        const { data: sitesData } = await supabase
-          .from("site") 
-          .select("id, name, distance_from_pdg_m")
-          .in("id", siteIds);
-        
+        const { data: sitesData } = await supabase.from("site").select("id, name, distance_from_pdg_m").in("id", siteIds);
         if (sitesData) {
           sitesData.forEach(s => {
-            siteMap[s.id] = {
-              name: s.name || "undefined",
-              dist: s.distance_from_pdg_m !== null ? s.distance_from_pdg_m : "undefined"
-            };
+            siteMap[s.id] = { name: s.name || "undefined", dist: s.distance_from_pdg_m ?? "undefined" };
           });
         }
-      } catch (siteErr) {
-        console.warn("⚠️ Site data fetch failed (non-fatal):", siteErr.message);
-        // We continue anyway, territory will just be "undefined"
-      }
+      } catch (e) { /* Ignore site errors */ }
     }
 
-    // STEP 4: Map Everything
+    // 5. Map Final Data
     const birds = individuals.map(b => {
       const siteData = siteMap[b.nest_ringing] || { name: "undefined", dist: "undefined" };
-
       return {
         individual_id: b.id,
         bird_id: b.ring_number || "",
@@ -101,7 +94,7 @@ export default async function handler(req, res) {
     return res.status(200).json(birds);
 
   } catch (err) {
-    console.error("💥 Critical Server Error:", err);
+    console.error("💥 Crash:", err);
     return res.status(500).json({ error: err.message });
   }
 }
