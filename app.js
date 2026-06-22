@@ -543,7 +543,7 @@ const payload = {
   longitude: lng,
 
   date: dateVal,
-  time_manual: timeVal,
+  time: timeVal,
 
   observer: Number(
     document.getElementById("observer-select").value
