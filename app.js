@@ -77,18 +77,3 @@ function renderBirds() {
   });
 }
 
-  // ✅ Bind change event to the new dropdowns
-  document.querySelectorAll(".action-select").forEach(select => {
-    select.onchange = () => {
-      const id = select.dataset.id;
-      const action = select.value;
-
-      if (!action) {
-        perBirdSelection.delete(id); // Clear if "Choose..." is selected
-      } else {
-        perBirdSelection.set(id, action); // Set the action
-      }
-      // No need to re-render, the selection is stored in the Map
-    };
-  });
-}
