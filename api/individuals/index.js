@@ -5,23 +5,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Map database color codes to your UI palette keys
-const COLOR_MAP = {
-  alu: "alu",
-  white: "white", // Adjust these keys to match your DB's actual text values
-  black: "black",
-  yellow: "yellow",
-  red: "red",
-  blue: "blue",
-  green: "green",
-  pink: "pink",
-  violet: "violet"
-};
-
 export default async function handler(req, res) {
   try {
-    // Use the "->" syntax to join foreign keys directly in the query
-    // This assumes ring_L_t is a foreign key to a table with a 'color' column
+    // 1. Fetch ONLY from the 'individual' table. No joins.
     const { data: individuals, error } = await supabase
       .from("individual")
       .select(`
@@ -33,43 +19,41 @@ export default async function handler(req, res) {
         ring_L_t,
         ring_L_b,
         ring_R_t,
-        ring_R_b,
-        -- Join sex category
-        sex_categories:sex_id ( code ),
-        -- Join ring colors (Adjust 'rings' to your actual referenced table name if different)
-        color_L_t:ring_L_t ( color ),
-        color_L_b:ring_L_b ( color ),
-        color_R_t:ring_R_t ( color ),
-        color_R_b:ring_R_b ( color )
+        ring_R_b
       `)
       .order("ring_number");
 
     if (error) {
-      console.error("Supabase Error:", error);
+      console.error("Supabase Fetch Error:", error);
       return res.status(500).json({ error: error.message });
     }
 
-    const birds = (individuals || []).map(b => ({
-      individual_id: b.id,
-      bird_id: b.ring_number || "",
-      name: b.name || "",
+    // 2. Simple Mapping
+    const birds = (individuals || []).map(b => {
       
-      // Safely extract nested sex code
-      sex: b.sex_categories?.[0]?.code || "U",
-      age: b.age_at_ringing || "",
+      // Helper to handle potential nulls
+      const getVal = (val) => (val === null ? "" : String(val));
 
-      // Safely extract nested color and map to UI keys
-      // We check if the join returned data before accessing .color
-      L_top: b.color_L_t?.[0]?.color ? COLOR_MAP[b.color_L_t[0].color] || b.color_L_t[0].color : "",
-      L_bottom: b.color_L_b?.[0]?.color ? COLOR_MAP[b.color_L_b[0].color] || b.color_L_b[0].color : "",
-      R_top: b.color_R_t?.[0]?.color ? COLOR_MAP[b.color_R_t[0].color] || b.color_R_t[0].color : "",
-      R_bottom: b.color_R_b?.[0]?.color ? COLOR_MAP[b.color_R_b[0].color] || b.color_R_b[0].color : ""
-    }));
+      return {
+        individual_id: b.id,
+        bird_id: b.ring_number || "",
+        name: b.name || "",
+        sex: b.sex_id ? String(b.sex_id) : "U", // Temporarily show ID if no join
+        age: b.age_at_ringing || "",
+
+        // Directly pass the value from the DB. 
+        // If your DB stores "red", this works. If it stores "3", we fix in Step 2.
+        L_top: getVal(b.ring_L_t),
+        L_bottom: getVal(b.ring_L_b),
+        R_top: getVal(b.ring_R_t),
+        R_bottom: getVal(b.ring_R_b)
+      };
+    });
 
     return res.status(200).json(birds);
 
   } catch (err) {
-    console.error("Server Error:", err);
+    console.error("Server Crash:", err);
     return res.status(500).json({ error: err.toString() });
   }
 }
