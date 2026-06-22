@@ -221,12 +221,31 @@
 <div id="popup-report-bg" class="popup-bg">
   <div class="popup">
     
-    <!-- ✅ ADD THIS BLOCK HERE -->
-    <select id="observer-select" style="display:none;">
-      <!-- Replace value="1" with your actual observer ID from your database -->
-      <option value="1" selected>Dominique</option>
-    </select>
-    <!-- ✅ END ADDITION -->
+<!-- Inside the popup-report-bg div, after the <h3> and <p> tags -->
+<h3>Beobachtung melden</h3>
+<p id="popup-bird-info"></p>
+
+<!-- ✅ ADD THIS DROPDOWN -->
+<div class="field-row" style="margin-bottom: 10px;">
+  <label for="observer-select" style="font-size: 13px; font-weight: 600; width: 100%;">Beobachter:</label>
+  <select id="observer-select" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+    <option value="7">Claudio</option>
+    <option value="9">Claudia</option>
+    <option value="10">Curdin</option>
+    <option value="3" selected>Dominique</option>
+    <option value="8">Fadri B</option>
+    <option value="5">Glauco</option>
+    <option value="4">Iris</option>
+    <option value="2">Lukas</option>
+    <option value="13">other</option>
+    <option value="6">Steivan</option>
+  </select>
+</div>
+<!-- ✅ END DROPDOWN -->
+
+<div class="field-row">
+  <input type="date" id="report-date">
+  <!-- ... rest of the form ... -->
 
     <h3>Beobachtung melden</h3>
     <p id="popup-bird-info"></p>
