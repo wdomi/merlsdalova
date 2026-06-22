@@ -5,21 +5,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Map database color codes to your UI palette keys
 const COLOR_MAP = {
   alu: "alu",
-  whi: "white",
-  bla: "black",
-  yel: "yellow",
+  white: "white", // Adjust these keys to match your DB's actual text values
+  black: "black",
+  yellow: "yellow",
   red: "red",
-  blu: "blue",
-  gre: "green",
-  pin: "pink",
-  vio: "violet"
+  blue: "blue",
+  green: "green",
+  pink: "pink",
+  violet: "violet"
 };
 
 export default async function handler(req, res) {
   try {
-
+    // Use the "->" syntax to join foreign keys directly in the query
+    // This assumes ring_L_t is a foreign key to a table with a 'color' column
     const { data: individuals, error } = await supabase
       .from("individual")
       .select(`
@@ -31,61 +33,43 @@ export default async function handler(req, res) {
         ring_L_t,
         ring_L_b,
         ring_R_t,
-        ring_R_b
+        ring_R_b,
+        -- Join sex category
+        sex_categories:sex_id ( code ),
+        -- Join ring colors (Adjust 'rings' to your actual referenced table name if different)
+        color_L_t:ring_L_t ( color ),
+        color_L_b:ring_L_b ( color ),
+        color_R_t:ring_R_t ( color ),
+        color_R_b:ring_R_b ( color )
       `)
       .order("ring_number");
 
     if (error) {
+      console.error("Supabase Error:", error);
       return res.status(500).json({ error: error.message });
     }
 
-    const { data: rings } = await supabase
-      .schema("ref")
-      .from("rings")
-      .select("id, color");
-
-    const { data: sexes } = await supabase
-      .schema("ref")
-      .from("sex_categories")
-      .select("id, code");
-
-    const ringMap = {};
-    (rings || []).forEach(r => {
-      ringMap[r.id] = COLOR_MAP[r.color] || r.color;
-    });
-
-    const sexMap = {};
-    (sexes || []).forEach(s => {
-      sexMap[s.id] = s.code;
-    });
-
     const birds = (individuals || []).map(b => ({
-      // used when saving observations
       individual_id: b.id,
-
-      // shown in UI
       bird_id: b.ring_number || "",
-
       name: b.name || "",
-
-      sex: sexMap[b.sex_id] || "U",
-
+      
+      // Safely extract nested sex code
+      sex: b.sex_categories?.[0]?.code || "U",
       age: b.age_at_ringing || "",
 
-      L_top: ringMap[b.ring_L_t] || "",
-      L_bottom: ringMap[b.ring_L_b] || "",
-
-      R_top: ringMap[b.ring_R_t] || "",
-      R_bottom: ringMap[b.ring_R_b] || ""
+      // Safely extract nested color and map to UI keys
+      // We check if the join returned data before accessing .color
+      L_top: b.color_L_t?.[0]?.color ? COLOR_MAP[b.color_L_t[0].color] || b.color_L_t[0].color : "",
+      L_bottom: b.color_L_b?.[0]?.color ? COLOR_MAP[b.color_L_b[0].color] || b.color_L_b[0].color : "",
+      R_top: b.color_R_t?.[0]?.color ? COLOR_MAP[b.color_R_t[0].color] || b.color_R_t[0].color : "",
+      R_bottom: b.color_R_b?.[0]?.color ? COLOR_MAP[b.color_R_b[0].color] || b.color_R_b[0].color : ""
     }));
 
     return res.status(200).json(birds);
 
   } catch (err) {
-
-    return res.status(500).json({
-      error: err.toString()
-    });
-
+    console.error("Server Error:", err);
+    return res.status(500).json({ error: err.toString() });
   }
 }
