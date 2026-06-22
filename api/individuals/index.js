@@ -12,78 +12,80 @@ const COLOR_MAP = {
 
 export default async function handler(req, res) {
   try {
-    // STEP 1: Fetch basic individual data (NO JOINS) - This should never fail
-    const { data: individuals, error: fetchError } = await supabase
+    // 1. Fetch Individuals (No joins)
+    const { data: individuals, error: indError } = await supabase
       .from("individual")
       .select("id, ring_number, name, age_at_ringing, sex_id, ring_L_t, ring_L_b, ring_R_t, ring_R_b")
       .order("ring_number");
 
-    if (fetchError) {
-      console.error("❌ BASIC FETCH FAILED:", fetchError);
-      return res.status(500).json({ 
-        error: "Basic fetch failed", 
-        message: fetchError.message, 
-        details: fetchError.details 
-      });
-    }
+    if (indError) throw indError;
+    if (!individuals || individuals.length === 0) return res.status(200).json([]);
 
-    if (!individuals || individuals.length === 0) {
-      return res.status(200).json([]);
-    }
-
-    // STEP 2: Collect all unique Ring IDs to fetch their colors manually
+    // 2. Collect unique Ring IDs
     const ringIds = new Set();
     individuals.forEach(b => {
-      if (b.ring_L_t) ringIds.add(b.ring_L_t);
-      if (b.ring_L_b) ringIds.add(b.ring_L_b);
-      if (b.ring_R_t) ringIds.add(b.ring_R_t);
-      if (b.ring_R_b) ringIds.add(b.ring_R_b);
+      [b.ring_L_t, b.ring_L_b, b.ring_R_t, b.ring_R_b].forEach(id => {
+        if (id !== null && id !== undefined) ringIds.add(id);
+      });
     });
 
     let ringColorsMap = {};
 
     if (ringIds.size > 0) {
-      // Try to fetch from 'ref.rings' explicitly
-      // We assume the table is named 'rings' in the 'ref' schema
-      const { data: ringsData, error: ringsError } = await supabase
+      console.log("🔍 Fetching colors for IDs:", Array.from(ringIds));
+
+      // TRY A: Fetch from 'ref' schema
+      let { data: ringsData, error: ringsError } = await supabase
         .schema('ref')
         .from('rings')
         .select('id, color')
         .in('id', Array.from(ringIds));
 
-      if (ringsError) {
-        console.warn("⚠️ Could not fetch ring colors automatically:", ringsError.message);
-        console.warn("Hint: Ensure 'ref.rings' table exists and is accessible.");
-        // We continue anyway, colors will just be empty/IDs
-      } else if (ringsData) {
-        // Build a map: { 1: "red", 2: "blue" }
+      // TRY B: If 'ref' failed or returned nothing, try 'public' schema
+      if (ringsError || !ringsData || ringsData.length === 0) {
+        console.warn("⚠️ 'ref.rings' failed or empty. Trying 'public.rings'...");
+        const { data: publicData, error: publicError } = await supabase
+          .from('rings') // Defaults to public schema
+          .select('id, color')
+          .in('id', Array.from(ringIds));
+        
+        if (publicError) {
+          console.error("❌ 'public.rings' also failed:", publicError.message);
+        } else {
+          ringsData = publicData; // Use the public data instead
+          console.log("✅ Found data in 'public.rings':", ringsData);
+        }
+      } else {
+        console.log("✅ Found data in 'ref.rings':", ringsData);
+      }
+
+      // Build the map
+      if (ringsData) {
         ringsData.forEach(r => {
-          ringColorsMap[r.id] = COLOR_MAP[r.color] || r.color;
+          // Handle case where column might be named 'name' or 'code' instead of 'color'
+          const colorVal = r.color || r.name || r.code; 
+          ringColorsMap[r.id] = COLOR_MAP[colorVal] || colorVal;
         });
       }
     }
 
-    // STEP 3: Map everything together manually
-    const birds = individuals.map(b => {
-      return {
-        individual_id: b.id,
-        bird_id: b.ring_number || "",
-        name: b.name || "",
-        sex: b.sex_id ? String(b.sex_id) : "U", // Simplified sex handling
-        age: b.age_at_ringing || "",
-        
-        // Map IDs to Colors using our manual map
-        L_top: ringColorsMap[b.ring_L_t] || "",
-        L_bottom: ringColorsMap[b.ring_L_b] || "",
-        R_top: ringColorsMap[b.ring_R_t] || "",
-        R_bottom: ringColorsMap[b.ring_R_b] || ""
-      };
-    });
+    // 3. Map Final Data
+    const birds = individuals.map(b => ({
+      individual_id: b.id,
+      bird_id: b.ring_number || "",
+      name: b.name || "",
+      sex: b.sex_id ? String(b.sex_id) : "U",
+      age: b.age_at_ringing || "",
+      L_top: ringColorsMap[b.ring_L_t] || "",
+      L_bottom: ringColorsMap[b.ring_L_b] || "",
+      R_top: ringColorsMap[b.ring_R_t] || "",
+      R_bottom: ringColorsMap[b.ring_R_b] || ""
+    }));
 
     return res.status(200).json(birds);
 
   } catch (err) {
-    console.error("💥 SERVER CRASH:", err);
-    return res.status(500).json({ error: err.toString(), stack: err.stack });
+    console.error("💥 CRITICAL ERROR:", err);
+    return res.status(500).json({ error: err.message, hint: err.hint });
   }
 }
