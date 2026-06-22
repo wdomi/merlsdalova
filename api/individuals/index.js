@@ -6,94 +6,84 @@ const supabase = createClient(
 );
 
 const COLOR_MAP = {
-  alu: "alu",
-  white: "white",
-  black: "black",
-  yellow: "yellow",
-  red: "red",
-  blue: "blue",
-  green: "green",
-  pink: "pink",
-  violet: "violet"
+  alu: "alu", white: "white", black: "black", yellow: "yellow",
+  red: "red", blue: "blue", green: "green", pink: "pink", violet: "violet"
 };
 
 export default async function handler(req, res) {
   try {
-    // 1. Fetch individuals
-    // We use .select() with explicit schema notation for the joined table: ref!foreign_key_name(column)
-    // If your foreign key constraint is named differently, this might fail, 
-    // so we use the standard Supabase syntax: table_name:foreign_key_column (columns)
-    
-    const { data: individuals, error } = await supabase
+    // STEP 1: Fetch basic individual data (NO JOINS) - This should never fail
+    const { data: individuals, error: fetchError } = await supabase
       .from("individual")
-      .select(`
-        id,
-        ring_number,
-        name,
-        age_at_ringing,
-        sex_id,
-        
-        -- Explicitly target the 'ref' schema for the rings table
-        -- Syntax: ref_rings:ring_L_t ( color ) assumes the FK points to ref.rings
-        -- If this fails, it means the FK constraint name or schema path is different.
-        ring_L_t ( color ),
-        ring_L_b ( color ),
-        ring_R_t ( color ),
-        ring_R_b ( color )
-      `)
-      // Try to specify schema for the main table if needed, usually 'public'
-      .schema('public') 
+      .select("id, ring_number, name, age_at_ringing, sex_id, ring_L_t, ring_L_b, ring_R_t, ring_R_b")
       .order("ring_number");
 
-    if (error) {
-      console.error("❌ SUPABASE QUERY ERROR:", error);
-      console.error("Details:", error.details);
-      console.error("Hint:", error.hint);
-      
-      // Return a more specific error message to the browser for debugging
+    if (fetchError) {
+      console.error("❌ BASIC FETCH FAILED:", fetchError);
       return res.status(500).json({ 
-        error: "Database query failed", 
-        message: error.message,
-        hint: error.hint || "Check if Foreign Keys exist between individual and ref.rings"
+        error: "Basic fetch failed", 
+        message: fetchError.message, 
+        details: fetchError.details 
       });
     }
 
-    // 2. Map the data
-    const birds = (individuals || []).map(b => {
-      // Helper to safely get color from joined object
-      const getColor = (ringObj) => {
-        // ringObj might be an array if the relationship is ambiguous, or an object
-        const item = Array.isArray(ringObj) ? ringObj[0] : ringObj;
-        if (!item || !item.color) return "";
-        return COLOR_MAP[item.color] || item.color;
-      };
+    if (!individuals || individuals.length === 0) {
+      return res.status(200).json([]);
+    }
 
-      // Helper for sex (assuming simple value or join)
-      let sexCode = "U";
-      if (typeof b.sex_id === 'object' && b.sex_id !== null) {
-         const sexData = Array.isArray(b.sex_id) ? b.sex_id[0] : b.sex_id;
-         sexCode = sexData.code || sexData.id || "U";
-      } else if (b.sex_id) {
-         sexCode = String(b.sex_id); // Fallback to ID if no join
+    // STEP 2: Collect all unique Ring IDs to fetch their colors manually
+    const ringIds = new Set();
+    individuals.forEach(b => {
+      if (b.ring_L_t) ringIds.add(b.ring_L_t);
+      if (b.ring_L_b) ringIds.add(b.ring_L_b);
+      if (b.ring_R_t) ringIds.add(b.ring_R_t);
+      if (b.ring_R_b) ringIds.add(b.ring_R_b);
+    });
+
+    let ringColorsMap = {};
+
+    if (ringIds.size > 0) {
+      // Try to fetch from 'ref.rings' explicitly
+      // We assume the table is named 'rings' in the 'ref' schema
+      const { data: ringsData, error: ringsError } = await supabase
+        .schema('ref')
+        .from('rings')
+        .select('id, color')
+        .in('id', Array.from(ringIds));
+
+      if (ringsError) {
+        console.warn("⚠️ Could not fetch ring colors automatically:", ringsError.message);
+        console.warn("Hint: Ensure 'ref.rings' table exists and is accessible.");
+        // We continue anyway, colors will just be empty/IDs
+      } else if (ringsData) {
+        // Build a map: { 1: "red", 2: "blue" }
+        ringsData.forEach(r => {
+          ringColorsMap[r.id] = COLOR_MAP[r.color] || r.color;
+        });
       }
+    }
 
+    // STEP 3: Map everything together manually
+    const birds = individuals.map(b => {
       return {
         individual_id: b.id,
         bird_id: b.ring_number || "",
         name: b.name || "",
-        sex: sexCode,
+        sex: b.sex_id ? String(b.sex_id) : "U", // Simplified sex handling
         age: b.age_at_ringing || "",
-        L_top: getColor(b.ring_L_t),
-        L_bottom: getColor(b.ring_L_b),
-        R_top: getColor(b.ring_R_t),
-        R_bottom: getColor(b.ring_R_b)
+        
+        // Map IDs to Colors using our manual map
+        L_top: ringColorsMap[b.ring_L_t] || "",
+        L_bottom: ringColorsMap[b.ring_L_b] || "",
+        R_top: ringColorsMap[b.ring_R_t] || "",
+        R_bottom: ringColorsMap[b.ring_R_b] || ""
       };
     });
 
     return res.status(200).json(birds);
 
   } catch (err) {
-    console.error("❌ SERVER CRASH:", err);
-    return res.status(500).json({ error: err.toString() });
+    console.error("💥 SERVER CRASH:", err);
+    return res.status(500).json({ error: err.toString(), stack: err.stack });
   }
 }
