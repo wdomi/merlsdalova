@@ -195,7 +195,7 @@ function renderBirds() {
 
     tr.innerHTML = `
       <!-- Name Column: Constrained width -->
-      <td style="vertical-align: middle; text-align: left; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">
+      <td style="vertical-align: middle; text-align: left; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">
         <div style="font-weight:600; font-size: 12px; line-height: 1.2;">${b.name || ""}</div>
         <div style="font-size: 10px; color:#666; line-height: 1.2;">${b.bird_id || ""}</div>
       </td>
