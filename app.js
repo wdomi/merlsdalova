@@ -187,35 +187,36 @@ function renderBirds() {
     
     const hasValueClass = currentAction ? "action-select has-value" : "action-select";
 
-    tr.innerHTML = `
-      <td style="vertical-align: middle; text-align: left;">
-        <div style="font-weight:600;">${b.name || ""}</div>
-        <div style="font-size:11px; color:#666;">${b.bird_id || ""}</div>
-      </td>
-      
-      <!-- ✅ Sex Alter Column REMOVED -->
+    // Inside renderBirds function, replace tr.innerHTML with this:
 
-      <td style="vertical-align: middle; text-align: left;">
-        ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
-      </td>
-      <td style="vertical-align: middle; text-align: center;">
-        <div style="display:grid; grid-template-columns:auto auto; column-gap:8px; justify-content: center;">
-          <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
-          <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
-        </div>
-      </td>
-      <td style="vertical-align: middle; text-align: right;">
-        <!-- ✅ Narrower Dropdown (min-width: 100px) -->
-        <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 4px 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 11px; min-width: 100px; transition: all 0.2s;">
-          <option value="">Aktion...</option>
-          <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beobachtet</option>
-          <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsicher</option>
-          <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefangen</option>
-          <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest_Beringung</option>
-          <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totfund</option>
-        </select>
-      </td>
-    `;
+tr.innerHTML = `
+  <!-- Name Column: Constrained width -->
+  <td style="vertical-align: middle; text-align: left; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-weight:600; font-size: 13px;">${b.name || ""}</div>
+    <div style="font-size:10px; color:#666;">${b.bird_id || ""}</div>
+  </td>
+  
+  <td style="vertical-align: middle; text-align: left;">
+    ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
+  </td>
+  <td style="vertical-align: middle; text-align: center;">
+    <div style="display:grid; grid-template-columns:auto auto; column-gap:4px; justify-content: center;">
+      <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
+      <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
+    </div>
+  </td>
+  <!-- Action Column: Very narrow, small font -->
+  <td style="vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+    <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 80px; max-width: 80px; transition: all 0.2s;">
+      <option value="">Aktion...</option>
+      <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beob.</option>
+      <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsich.</option>
+      <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefang.</option>
+      <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest.</option>
+      <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totf.</option>
+    </select>
+  </td>
+`;
     body.appendChild(tr);
   });
 
