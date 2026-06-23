@@ -170,11 +170,14 @@ function colorPill(c) {
   return `<span style="background:${hex};color:${text};padding:1px 3px;border-radius:3px;font-size:10px;line-height:1;display:inline-block;">${c.slice(0,3)}</span>`;
 }
 
+
+
+
 function renderBirds() {
   const body = document.getElementById("birds-body");
   if (!body) return;
   if (!birds || !birds.length) {
-    body.innerHTML = "<tr><td colspan='5'>Lade Vögel...</td></tr>";
+    body.innerHTML = "<tr><td colspan='4'>Lade Vögel...</td></tr>"; // Updated colspan to 4
     return;
   }
   body.innerHTML = "";
@@ -182,67 +185,63 @@ function renderBirds() {
     const currentAction = perBirdSelection.get(b.bird_id) || "";
     const tr = document.createElement("tr");
     
-    // Determine if we should add the dark class immediately
     const hasValueClass = currentAction ? "action-select has-value" : "action-select";
 
-    // Inside renderBirds function...
-tr.innerHTML = `
-  <td style="vertical-align: middle; text-align: left;">
-    <div style="font-weight:600;">${b.name || ""}</div>
-    <div style="font-size:11px; color:#666;">${b.bird_id || ""}</div>
-  </td>
-  <td style="vertical-align: middle; text-align: left;">
-    ${b.sex || "?"}<br>${b.age || ""}
-  </td>
-  <td style="vertical-align: middle; text-align: left;">
-    ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
-  </td>
-  <td style="vertical-align: middle; text-align: center;">
-    <div style="display:grid; grid-template-columns:auto auto; column-gap:8px; justify-content: center;">
-      <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
-      <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
-    </div>
-  </td>
-  <td style="vertical-align: middle; text-align: right;">
-    <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; min-width: 130px; transition: all 0.2s;">
-      <option value="">Aktion...</option>
-      <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beobachtet</option>
-      <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsicher</option>
-      <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefangen</option>
-      <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest_Beringung</option>
-      <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totfund</option>
-    </select>
-  </td>
-`;
+    tr.innerHTML = `
+      <td style="vertical-align: middle; text-align: left;">
+        <div style="font-weight:600;">${b.name || ""}</div>
+        <div style="font-size:11px; color:#666;">${b.bird_id || ""}</div>
+      </td>
+      
+      <!-- ✅ Sex Alter Column REMOVED -->
+
+      <td style="vertical-align: middle; text-align: left;">
+        ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
+      </td>
+      <td style="vertical-align: middle; text-align: center;">
+        <div style="display:grid; grid-template-columns:auto auto; column-gap:8px; justify-content: center;">
+          <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
+          <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
+        </div>
+      </td>
+      <td style="vertical-align: middle; text-align: right;">
+        <!-- ✅ Narrower Dropdown (min-width: 100px) -->
+        <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 4px 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 11px; min-width: 100px; transition: all 0.2s;">
+          <option value="">Aktion...</option>
+          <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beobachtet</option>
+          <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsicher</option>
+          <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefangen</option>
+          <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest_Beringung</option>
+          <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totfund</option>
+        </select>
+      </td>
+    `;
     body.appendChild(tr);
   });
 
-  // Re-bind events and ensure class is correct on change
   document.querySelectorAll(".action-select").forEach(select => {
-    // Function to update class based on value
     const updateStyle = () => {
-      if (select.value) {
-        select.classList.add("has-value");
-      } else {
-        select.classList.remove("has-value");
-      }
+      if (select.value) select.classList.add("has-value");
+      else select.classList.remove("has-value");
     };
-
-    // Run once on load (in case value was pre-selected)
     updateStyle();
-
-    // Run on change
     select.onchange = function() {
       const id = this.dataset.id;
       const action = this.value;
-      
-      updateStyle(); // Apply dark style immediately
-
+      updateStyle();
       if (!action) perBirdSelection.delete(id);
       else perBirdSelection.set(id, action);
     };
   });
 }
+
+
+
+
+
+
+
+
 
 // ------------------------------------------------------------------------
 // BUTTONS
