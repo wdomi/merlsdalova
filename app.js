@@ -213,17 +213,17 @@ function renderBirds() {
       <td style="vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
         <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 80px; max-width: 80px; transition: all 0.2s;">
           <option value="">Aktion...</option>
-          <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beob.</option>
-          <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsich.</option>
-          <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefang.</option>
-          <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest.</option>
-          <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totf.</option>
+          <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beobachtet</option>
+          <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsicher</option>
+          <option value="catch" ${currentAction === "catch" ? "selected" : ""}>Fang</option>
+          <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totfund</option>
         </select>
       </td>
     `;
 
     body.appendChild(tr);
   });
+          // → took this line out: <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest.</option>
 
   // Re-bind events and ensure class is correct on change
   document.querySelectorAll(".action-select").forEach(select => {
