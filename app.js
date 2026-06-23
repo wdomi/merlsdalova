@@ -190,10 +190,10 @@ function renderBirds() {
     // Inside renderBirds function, replace tr.innerHTML with this:
 
 tr.innerHTML = `
-  <!-- Name Column: Constrained width -->
-  <td style="vertical-align: middle; text-align: left; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-    <div style="font-weight:600; font-size: 13px;">${b.name || ""}</div>
-    <div style="font-size:10px; color:#666;">${b.bird_id || ""}</div>
+  <!-- ✅ Ultra-Narrow Name Column -->
+  <td style="vertical-align: middle; text-align: left; width: 1%; white-space: nowrap; padding-right: 8px;">
+    <div style="font-weight:600; font-size: 12px; line-height: 1.2;">${b.name || ""}</div>
+    <div style="font-size: 10px; color:#666; line-height: 1.2;">${b.bird_id || ""}</div>
   </td>
   
   <td style="vertical-align: middle; text-align: left;">
@@ -205,9 +205,8 @@ tr.innerHTML = `
       <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
     </div>
   </td>
-  <!-- Action Column: Very narrow, small font -->
   <td style="vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
-    <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 80px; max-width: 80px; transition: all 0.2s;">
+    <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 75px; max-width: 75px; transition: all 0.2s;">
       <option value="">Aktion...</option>
       <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beob.</option>
       <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsich.</option>
