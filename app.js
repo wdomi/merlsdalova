@@ -173,49 +173,79 @@ function colorPill(c) {
 
 
 
-// Inside renderBirds function, replace tr.innerHTML with this:
 
-tr.innerHTML = `
-  <!-- Name Column: Constrained width -->
-  <td style="vertical-align: middle; text-align: left; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-    <div style="font-weight:600; font-size: 13px;">${b.name || ""}</div>
-    <div style="font-size:10px; color:#666;">${b.bird_id || ""}</div>
-  </td>
+
+function renderBirds() {
+  const body = document.getElementById("birds-body");
+  if (!body) return;
   
-  <td style="vertical-align: middle; text-align: left;">
-    ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
-  </td>
-  <td style="vertical-align: middle; text-align: center;">
-    <div style="display:grid; grid-template-columns:auto auto; column-gap:4px; justify-content: center;">
-      <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
-      <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
-    </div>
-  </td>
-  <!-- Action Column: Very narrow, small font -->
-  <td style="vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
-    <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 80px; max-width: 80px; transition: all 0.2s;">
-      <option value="">Aktion...</option>
-      <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beob.</option>
-      <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsich.</option>
-      <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefang.</option>
-      <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest.</option>
-      <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totf.</option>
-    </select>
-  </td>
-`;
+  if (!birds || !birds.length) {
+    body.innerHTML = "<tr><td colspan='4'>Lade Vögel...</td></tr>";
+    return;
+  }
+
+  body.innerHTML = "";
+
+  birds.filter(birdMatches).forEach(b => {
+    const currentAction = perBirdSelection.get(b.bird_id) || "";
+    const tr = document.createElement("tr");
+    
+    // Determine if we should add the dark class immediately
+    const hasValueClass = currentAction ? "action-select has-value" : "action-select";
+
+    tr.innerHTML = `
+      <!-- Name Column: Constrained width -->
+      <td style="vertical-align: middle; text-align: left; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">
+        <div style="font-weight:600; font-size: 12px; line-height: 1.2;">${b.name || ""}</div>
+        <div style="font-size: 10px; color:#666; line-height: 1.2;">${b.bird_id || ""}</div>
+      </td>
+      
+      <td style="vertical-align: middle; text-align: left;">
+        ${b.territory || ""} (${b.dist || ""})<br>${b.banded_on || ""}
+      </td>
+      <td style="vertical-align: middle; text-align: center;">
+        <div style="display:grid; grid-template-columns:auto auto; column-gap:4px; justify-content: center;">
+          <div>${colorPill(b.L_top)}</div><div>${colorPill(b.R_top)}</div>
+          <div>${colorPill(b.L_bottom)}</div><div>${colorPill(b.R_bottom)}</div>
+        </div>
+      </td>
+      <!-- Action Column: Very narrow, small font -->
+      <td style="vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+        <select class="${hasValueClass}" data-id="${b.bird_id}" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 10px; min-width: 80px; max-width: 80px; transition: all 0.2s;">
+          <option value="">Aktion...</option>
+          <option value="sighted" ${currentAction === "sighted" ? "selected" : ""}>beob.</option>
+          <option value="maybe" ${currentAction === "maybe" ? "selected" : ""}>unsich.</option>
+          <option value="catch" ${currentAction === "catch" ? "selected" : ""}>gefang.</option>
+          <option value="nest_ringing" ${currentAction === "nest_ringing" ? "selected" : ""}>Nest.</option>
+          <option value="dead_find" ${currentAction === "dead_find" ? "selected" : ""}>Totf.</option>
+        </select>
+      </td>
+    `;
+
     body.appendChild(tr);
   });
 
+  // Re-bind events and ensure class is correct on change
   document.querySelectorAll(".action-select").forEach(select => {
+    // Function to update class based on value
     const updateStyle = () => {
-      if (select.value) select.classList.add("has-value");
-      else select.classList.remove("has-value");
+      if (select.value) {
+        select.classList.add("has-value");
+      } else {
+        select.classList.remove("has-value");
+      }
     };
+
+    // Run once on load (in case value was pre-selected)
     updateStyle();
+
+    // Run on change
     select.onchange = function() {
       const id = this.dataset.id;
       const action = this.value;
-      updateStyle();
+      
+      updateStyle(); // Apply dark style immediately
+
       if (!action) perBirdSelection.delete(id);
       else perBirdSelection.set(id, action);
     };
