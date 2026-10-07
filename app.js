@@ -346,13 +346,22 @@ function setupButtons() {
   };
   
 
-  const ringsUnknownBtn = document.getElementById("btn-rings-unknown");
+const ringsUnknownBtn = document.getElementById("btn-rings-unknown");
 
 if (ringsUnknownBtn) ringsUnknownBtn.onclick = () => {
+  const unknownBird = birds.find(
+    b => Number(b.individual_id) === 1073
+  );
+
+  if (!unknownBird) {
+    alert("Beringung unklar konnte in der Vogelliste nicht gefunden werden.");
+    return;
+  }
+
   perBirdSelection.clear();
-  perBirdSelection.set("1073", "sighted");
+  perBirdSelection.set(String(unknownBird.bird_id), "sighted");
   openReportPopup();
-};
+};;
 
   
   const latestLink = document.getElementById("lnk-latest");
