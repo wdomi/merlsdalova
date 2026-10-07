@@ -544,7 +544,7 @@ const payload = {
   latitude: lat,
   longitude: lng,
   date: dateVal,
-  time_manual: timeVal,
+time: timeVal,
   observer: Number(observerSelect.value),
   remark: remarkVal
 };
@@ -722,10 +722,28 @@ function renderLatestMap() {
       opacity: isNewest ? 1 : Math.max(0.25, opacity)
     });
 
-    marker.bindPopup(`
-      <div>
-        <strong>${r.name || "—"}</strong>
-        ${r.ring_number ? ` (${r.ring_number})` : ""}
+    // Match observation to bird data
+const birdData = birds.find(b =>
+  String(b.individual_id) === String(r.individual_id)
+);
+
+let birdLabel;
+
+if (birdData) {
+  birdLabel = birdData.name || birdData.bird_id || "Unbekannt";
+
+  if (birdData.name && birdData.bird_id) {
+    birdLabel += ` (${birdData.bird_id})`;
+  }
+} else if (!r.individual_id) {
+  birdLabel = "Unberingt";
+} else {
+  birdLabel = "Unbekannt";
+}
+
+marker.bindPopup(`
+  <div>
+    <strong>${birdLabel}</strong>
         <br>
         ${formatLatestDate(r.date)}
         ${r.remark ? `<br><em>${r.remark}</em>` : ""}
