@@ -434,7 +434,10 @@ function openReportPopup() {
 
   document.getElementById("report-time").value =
     now.toTimeString().slice(0, 8);
-
+  
+const remarksEl = document.getElementById("report-remarks");
+if (remarksEl) remarksEl.value = "";
+  
   openPopup("popup-report-bg");
   initMap();
 }
@@ -509,23 +512,24 @@ async function saveSelectedReports() {
 
   // ❌ LV95 Calculation Removed
 
-  const dateVal = document.getElementById("report-date").value;
-  const timeVal = document.getElementById("report-time").value || "";
+const dateVal = document.getElementById("report-date").value;
+const timeVal = document.getElementById("report-time").value || "";
+const remarksVal = document.getElementById("report-remarks")?.value.trim() || "";
 
   for (const entry of entries) {
     const actionId = ACTION_IDS[entry.action];
     if (!actionId) { alert("Bitte für jeden Vogel eine Aktion auswählen."); return; }
 
-    const payload = {
-      individual_id: entry.bird.individual_id,
-      action: entry.action,
-      latitude: lat,
-      longitude: lng,
-      date: dateVal,
-      time_manual: timeVal,
-      observer: Number(observerSelect.value)
-      // ❌ lv95_x and lv95_y removed
-    };
+const payload = {
+  individual_id: entry.bird.individual_id,
+  action: entry.action,
+  latitude: lat,
+  longitude: lng,
+  date: dateVal,
+  time_manual: timeVal,
+  observer: Number(observerSelect.value),
+  remarks: remarksVal
+};
 
     try {
       if (!navigator.onLine) addToOfflineQueue(payload);
