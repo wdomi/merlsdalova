@@ -637,11 +637,19 @@ const payload = {
   action: entry.action,
   latitude: lat,
   longitude: lng,
-date: dateVal,
-time: timeVal,
+  date: dateVal,
+  time: timeVal,
   observer: Number(observerSelect.value),
   remark: remarkVal
 };
+
+// Only for "Beringung unklar"
+if (entry.bird.report_type === "rings_unknown") {
+  payload.ring_L_t = 99;
+  payload.ring_L_b = 99;
+  payload.ring_R_t = 99;
+  payload.ring_R_b = 99;
+}
 
     try {
       if (!navigator.onLine) addToOfflineQueue(payload);
