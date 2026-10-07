@@ -314,7 +314,6 @@ function renderBirds() {
 // ------------------------------------------------------------------------
 
 function setupButtons() {
-function setupButtons() {
   const resetBtn = document.getElementById("btn-reset");
 
   if (resetBtn) resetBtn.onclick = () => {
