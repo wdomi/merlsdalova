@@ -496,12 +496,19 @@ function updateCoords(lat, lng) {
 // ------------------------------------------------------------------------
 
 async function saveSelectedReports() {
+  // Observer is mandatory
+  const observerSelect = document.getElementById("observer-select");
+
+  if (!observerSelect || observerSelect.value === "") {
+    alert("Bitte Beobachter auswählen.");
+    if (observerSelect) observerSelect.focus();
+    return;
+  }
   const entries = window._pendingSelections;
   if (!entries || !entries.length) return;
 
   const latInput = document.getElementById("report-lat");
   const lonInput = document.getElementById("report-lon");
-  const observerSelect = document.getElementById("observer-select");
   
   if (!latInput || !lonInput || !observerSelect) { alert("Form elements missing."); return; }
 
