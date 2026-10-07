@@ -21,11 +21,7 @@ export default async function handler(req, res) {
 
   const body = req.body || {};
 
-  if (!body.observer) {
-  return res.status(400).json({
-    error: "Bitte Beobachter auswählen."
-  });
-}
+
 
   // =========================
   // LIST OBSERVATIONS
@@ -61,6 +57,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
+
+    if (!body.observer) {
+  return res.status(400).json({
+    error: "Bitte Beobachter auswählen."
+  });
+}
+
+  
   // =========================
   // INSERT OBSERVATION
   // =========================
