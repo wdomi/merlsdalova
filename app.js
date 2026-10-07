@@ -812,7 +812,7 @@ marker.bindPopup(`
   <div>
     <strong>${birdLabel}</strong>
         <br>
-        ${formatLatestDate(r.date)}
+        ${formatLatestDate(r.date, r.time)}
         ${r.remark ? `<br><em>${r.remark}</em>` : ""}
         <br>
         <span
@@ -934,7 +934,7 @@ function renderLatestList(visible) {
       </div>
 
       <div style="color:#555;">
-        ${formatLatestDate(r.date)}
+        ${formatLatestDate(r.date, r.time)}
       </div>
 
       ${
