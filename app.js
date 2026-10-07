@@ -337,6 +337,8 @@ function setupButtons() {
   if (latestLink) latestLink.onclick = e => { e.preventDefault(); loadLatest(); };
   const combinationsBtn = document.getElementById("btn-combinations");
 if (combinationsBtn) combinationsBtn.onclick = loadCombinations;
+  const reshuffleBtn = document.getElementById("btn-reshuffle-combinations");
+if (reshuffleBtn) reshuffleBtn.onclick = loadCombinations;
 }
 
 
