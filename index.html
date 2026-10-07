@@ -342,57 +342,58 @@
 
 <!-- ===================== LATEST OBSERVATIONS POPUP ===================== -->
 
-<!-- old : 26-01-02 9:02
 <div id="popup-latest-bg" class="popup-bg">
   <div class="popup">
-    <h3>Letzte Beobachtungen</h3>
-    <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-latest-bg')">Schliessen</button>
-    <div id="latest-list">Lade...</div>
-  </div>
-</div>
--->
 
-<!-- new : 26-01-02 9:02 -->
-<div id="popup-latest-bg" class="popup-bg">
-  <div class="popup">
     <h3>Letzte Beobachtungen</h3>
 
     <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
       <select id="latest-bird-filter" style="flex:1; padding:6px;">
         <option value="">Vogel auswählen</option>
       </select>
-      <button id="latest-reset" class="submit-btn submit-btn-ghost">Reset</button>
+
+      <button
+        id="latest-reset"
+        class="submit-btn submit-btn-ghost">
+        Reset
+      </button>
     </div>
 
     <div style="margin-bottom:6px;">
       <label style="font-size:12px;">
-<!--        Letzte <span id="days-label">365</span> Tage    -->
         Letzte <span id="days-label">–</span> Tage
-
       </label>
-      <input id="time-slider" type="range" min="1" max="365" step="1" value="30" style="width:100%;">
+
+      <input
+        id="time-slider"
+        type="range"
+        min="1"
+        max="365"
+        step="1"
+        value="30"
+        style="width:100%;">
     </div>
 
-      <div style="display:flex; gap:8px; margin-top:12px;">
-        <button
-          id="btn-reshuffle-combinations"
-          class="submit-btn submit-btn-primary">
-          Neu mischen
-        </button>
-      
-        <button
-          class="submit-btn submit-btn-ghost"
-          onclick="closePopup('popup-combinations-bg')">
-          Schliessen
-        </button>
-      </div>
+    <div
+      id="latest-map"
+      style="height:300px; border-radius:8px;">
+    </div>
+
+    <button
+      class="submit-btn submit-btn-ghost"
+      style="margin-top:8px;"
+      onclick="closePopup('popup-latest-bg')">
+      Schliessen
+    </button>
+
+  </div>
 </div>
 
 <!-- new : 26-01-02 9:02 -->
 
 
 
-  <!-- ===================== FREE RING COMBINATIONS POPUP ===================== -->
+<!-- ===================== FREE RING COMBINATIONS POPUP ===================== -->
 
 <div id="popup-combinations-bg" class="popup-bg">
   <div class="popup">
@@ -407,12 +408,21 @@
       Lade...
     </div>
 
-    <button
-      class="submit-btn submit-btn-ghost"
-      style="margin-top:12px;"
-      onclick="closePopup('popup-combinations-bg')">
-      Schliessen
-    </button>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+
+      <button
+        id="btn-reshuffle-combinations"
+        class="submit-btn submit-btn-primary">
+        Neu mischen
+      </button>
+
+      <button
+        class="submit-btn submit-btn-ghost"
+        onclick="closePopup('popup-combinations-bg')">
+        Schliessen
+      </button>
+
+    </div>
 
   </div>
 </div>
