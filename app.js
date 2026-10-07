@@ -1133,7 +1133,7 @@ async function loadCombinations() {
     const combinations = await r.json();
 
     count.textContent =
-      `${combinations.length} freie Kombinationen`;
+      `${combinations.length} freie Kombinationen | Links oben/unten | Rechts oben/unten`;
 
     if (!combinations.length) {
       list.innerHTML = "Keine freien Kombinationen.";
