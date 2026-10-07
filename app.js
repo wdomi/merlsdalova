@@ -651,42 +651,235 @@ function populateLatestDropdown() {
 
 function renderLatestMap() {
   if (!latestLayer || !latestMap) return;
+
   latestLayer.clearLayers();
+
   const now = Date.now();
   let visible = [];
+
   latestData.forEach(r => {
     if (!r.latitude || !r.longitude || !r.date) return;
+
     if (latestBirdFilter && r.ring_number !== latestBirdFilter) return;
-    const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
+
+    const obsDate = new Date(r.date);
+    const daysOld = (now - obsDate.getTime()) / (1000 * 60 * 60 * 24);
+
     if (daysOld > latestMaxDays) return;
+
     visible.push(r);
   });
-  if (!visible.length) return;
+
+  // newest first
   visible.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Update list even when there are no observations
+  renderLatestList(visible);
+
+  if (!visible.length) return;
+
   const mostRecent = visible[0];
-  visible.forEach(r => {
+  const bounds = [];
+
+  visible.forEach((r, index) => {
+
     const lat = Number(r.latitude);
     const lon = Number(r.longitude);
+
     if (isNaN(lat) || isNaN(lon)) return;
-    const daysOld = (now - new Date(r.date)) / (1000 * 60 * 60 * 24);
-    const opacity = Math.max(0.2, 1 - daysOld / latestMaxDays);
-    const color = r.action === "sighted" ? "#3b82f6" : r.action === "maybe" ? "#f59e0b" : "#999";
-    const isNewest = r === mostRecent;
+
+    bounds.push([lat, lon]);
+
+    const daysOld =
+      (now - new Date(r.date).getTime()) /
+      (1000 * 60 * 60 * 24);
+
+    // New observations strong, old observations increasingly faded
+    const ageFraction = Math.min(
+      1,
+      Math.max(0, daysOld / latestMaxDays)
+    );
+
+    const opacity = 1 - (ageFraction * 0.8);
+
+    const color =
+      r.action === "sighted" ? "#3b82f6" :
+      r.action === "maybe"   ? "#f59e0b" :
+                               "#777777";
+
+    const isNewest = index === 0;
+
     const marker = L.circleMarker([lat, lon], {
-      radius: isNewest ? 14 : 10,
+      radius: isNewest ? 11 : 7,
+
       fillColor: color,
       fillOpacity: isNewest ? 1 : opacity,
-      color: isNewest ? "#ffffff" : "transparent",
-      weight: isNewest ? 3 : 0
-    })
-    .bindPopup(`<div><strong>${r.name}</strong> (${r.ring_number || "—"})<br>${r.date}<br><span style="font-size:11px;color:#c33;cursor:pointer;text-decoration:underline;" onclick="deleteObservation(${r.id})">löschen</span></div>`)
-    .addTo(latestLayer);
-    if (isNewest) { marker.openPopup(); marker.bringToFront(); }
+
+      // newest observation gets a strong black outline
+      color: isNewest ? "#111111" : color,
+      weight: isNewest ? 4 : 1,
+
+      opacity: isNewest ? 1 : Math.max(0.25, opacity)
+    });
+
+    marker.bindPopup(`
+      <div>
+        <strong>${r.name || "—"}</strong>
+        ${r.ring_number ? ` (${r.ring_number})` : ""}
+        <br>
+        ${formatLatestDate(r.date)}
+        ${r.remark ? `<br><em>${r.remark}</em>` : ""}
+        <br>
+        <span
+          style="
+            font-size:11px;
+            color:#c33;
+            cursor:pointer;
+            text-decoration:underline;
+          "
+          onclick="deleteObservation(${r.id})">
+          löschen
+        </span>
+      </div>
+    `);
+
+    marker.addTo(latestLayer);
+
+    // store marker so list can find it
+    r._latestMarker = marker;
+
+    if (isNewest) {
+      marker.bringToFront();
+    }
   });
-  const newestLat = Number(mostRecent.latitude);
-  const newestLon = Number(mostRecent.longitude);
-  if (!isNaN(newestLat) && !isNaN(newestLon)) latestMap.setView([newestLat, newestLon], 17);
+
+  // -------------------------------------------------------
+  // COMFORTABLE MAP OVERVIEW
+  // -------------------------------------------------------
+
+  if (bounds.length === 1) {
+
+    // only one observation: don't zoom extremely close
+    latestMap.setView(bounds[0], 14);
+
+  } else if (bounds.length > 1) {
+
+    latestMap.fitBounds(bounds, {
+      padding: [35, 35],
+      maxZoom: 15
+    });
+
+  }
+
+  setTimeout(() => latestMap.invalidateSize(), 100);
 }
+
+
+function formatLatestDate(value) {
+  if (!value) return "—";
+
+  const d = new Date(value);
+
+  if (isNaN(d.getTime())) return value;
+
+  return d.toLocaleString("de-CH", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+
+function renderLatestList(visible) {
+
+  const container =
+    document.getElementById("latest-observations-list");
+
+  if (!container) return;
+
+  const observations = visible.slice(0, 10);
+
+  if (!observations.length) {
+    container.innerHTML = `
+      <div style="color:#777; padding:8px 0;">
+        Keine Beobachtungen gefunden.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  observations.forEach((r, index) => {
+
+    const row = document.createElement("div");
+
+    row.style.cssText = `
+      padding:8px 4px;
+      border-bottom:1px solid #e6e6e6;
+      cursor:pointer;
+    `;
+
+    const bird =
+      r.name ||
+      r.ring_number ||
+      "Unbekannt";
+
+    const ring =
+      r.ring_number
+        ? ` (${r.ring_number})`
+        : "";
+
+    row.innerHTML = `
+      <div>
+        <strong>
+          ${index === 0 ? "● " : ""}
+          ${bird}${ring}
+        </strong>
+      </div>
+
+      <div style="color:#555;">
+        ${formatLatestDate(r.date)}
+      </div>
+
+      ${
+        r.remark
+          ? `<div style="color:#777; margin-top:2px;">
+               ${r.remark}
+             </div>`
+          : ""
+      }
+    `;
+
+    row.onclick = () => {
+
+      const lat = Number(r.latitude);
+      const lon = Number(r.longitude);
+
+      if (!isNaN(lat) && !isNaN(lon)) {
+
+        latestMap.flyTo(
+          [lat, lon],
+          Math.max(latestMap.getZoom(), 15),
+          { duration: 0.5 }
+        );
+
+        if (r._latestMarker) {
+          r._latestMarker.openPopup();
+        }
+      }
+    };
+
+    container.appendChild(row);
+  });
+}
+
+
+
+
+
 
 async function deleteObservation(id) {
   const ok = confirm("Möchtest du wirklich die Beobachtung löschen?");
