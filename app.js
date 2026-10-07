@@ -335,7 +335,11 @@ function setupButtons() {
   };
   const latestLink = document.getElementById("lnk-latest");
   if (latestLink) latestLink.onclick = e => { e.preventDefault(); loadLatest(); };
+  const combinationsBtn = document.getElementById("btn-combinations");
+if (combinationsBtn) combinationsBtn.onclick = loadCombinations;
 }
+
+
 
 // ------------------------------------------------------------------------
 // REPORT POPUP + MAP
@@ -676,6 +680,98 @@ async function deleteObservation(id) {
     alert("Serverfehler.");
   }
 }
+
+
+
+
+// ------------------------------------------------------------------------
+// FREE RING COMBINATIONS
+// ------------------------------------------------------------------------
+
+async function loadCombinations() {
+
+  openPopup("popup-combinations-bg");
+
+  const list = document.getElementById("combinations-list");
+  const count = document.getElementById("combinations-count");
+
+  list.innerHTML = "Lade...";
+  count.textContent = "";
+
+  try {
+
+    const r = await fetch("/api/combinations");
+
+    if (!r.ok) {
+      throw new Error("API Error: " + r.status);
+    }
+
+    const combinations = await r.json();
+
+    count.textContent =
+      `${combinations.length} freie Kombinationen`;
+
+    if (!combinations.length) {
+      list.innerHTML = "Keine freien Kombinationen.";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    combinations.forEach(c => {
+
+      const row = document.createElement("div");
+      row.className = "combination-row";
+
+      const colors = String(c.lt_lb_rt_rb || "")
+        .split("|")
+        .map(x => x.trim());
+
+      const dots = document.createElement("div");
+      dots.className = "combination-dots";
+
+      colors.forEach(color => {
+
+        const dot = document.createElement("span");
+        dot.className = "ring-dot";
+
+        dot.style.backgroundColor =
+          COLOR_PALETTE[color] || "#ccc";
+
+        // White needs a visible border
+        if (color === "white") {
+          dot.style.border = "1px solid #555";
+        }
+
+        dots.appendChild(dot);
+      });
+
+      const text = document.createElement("div");
+      text.className = "combination-text";
+
+      text.innerHTML = `
+        <div>${c.lt_lb_rt_rb || ""}</div>
+        <div class="combination-key">${c.rings_key || ""}</div>
+      `;
+
+      row.appendChild(dots);
+      row.appendChild(text);
+
+      list.appendChild(row);
+    });
+
+  } catch (err) {
+
+    console.error("Failed to load combinations:", err);
+
+    list.innerHTML =
+      "Ringkombinationen konnten nicht geladen werden.";
+
+  }
+}
+
+
+
 
 // ------------------------------------------------------------------------
 // POPUPS
