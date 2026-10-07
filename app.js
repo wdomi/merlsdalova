@@ -344,6 +344,13 @@ function setupButtons() {
     perBirdSelection.set("unringed", "sighted");
     openReportPopup();
   };
+  const ringsUnknownBtn = document.getElementById("btn-rings-unknown");
+
+if (ringsUnknownBtn) ringsUnknownBtn.onclick = () => {
+  perBirdSelection.clear();
+  perBirdSelection.set("rings_unknown", "sighted");
+  openReportPopup();
+};
   const latestLink = document.getElementById("lnk-latest");
   if (latestLink) latestLink.onclick = e => { e.preventDefault(); loadLatest(); };
   const combinationsBtn = document.getElementById("btn-combinations");
@@ -373,16 +380,32 @@ function openReportPopup() {
     let bird;
 
     if (birdId === "unringed") {
-      bird = {
-        bird_id: "",
-        name: "unberingt",
-        territory: ""
-      };
-    } else {
-      bird = birds.find(b =>
-        String(b.bird_id ?? "") === birdId
-      );
-    }
+
+  bird = {
+    bird_id: "",
+    individual_id: null,
+    name: "unberingt",
+    territory: "",
+    report_type: "unringed"
+  };
+
+} else if (birdId === "rings_unknown") {
+
+  bird = {
+    bird_id: "",
+    individual_id: null,
+    name: "Beringung unklar",
+    territory: "",
+    report_type: "rings_unknown"
+  };
+
+} else {
+
+  bird = birds.find(b =>
+    String(b.bird_id ?? "") === birdId
+  );
+
+}
 
     if (!bird) {
       console.error(
@@ -416,12 +439,16 @@ function openReportPopup() {
   const infoEl = document.getElementById("popup-bird-info");
 
   if (entries.length === 1) {
-    const bird = entries[0].bird;
+  const bird = entries[0].bird;
 
-    infoEl.textContent = bird.bird_id
-      ? `${bird.name} (${bird.bird_id})`
-      : "Unberingter Vogel";
+  if (bird.report_type === "rings_unknown") {
+    infoEl.textContent = "Beringung unklar";
+  } else if (bird.report_type === "unringed") {
+    infoEl.textContent = "Unberingter Vogel";
   } else {
+    infoEl.textContent = `${bird.name} (${bird.bird_id})`;
+  }
+} else {
     const names = entries.map(entry => {
       const bird = entry.bird;
 
