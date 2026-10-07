@@ -438,68 +438,135 @@ function openReportPopup() {
     `;
   }
 
+
+  // --------------------------------------------------------
+  // SET CURRENT LOCAL DATE AND TIME
+  // The observer can still change these fields manually.
+  // --------------------------------------------------------
+
   const now = new Date();
 
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+
   document.getElementById("report-date").value =
-    now.toISOString().slice(0, 10);
+    `${year}-${month}-${day}`;
 
   document.getElementById("report-time").value =
-    now.toTimeString().slice(0, 8);
-  
-const remarkEl = document.getElementById("report-remark");
-if (remarkEl) remarkEl.value = "";
-  
+    `${hours}:${minutes}:${seconds}`;
+
+
+  // Clear remarks from previous observation
+  const remarkEl = document.getElementById("report-remark");
+  if (remarkEl) remarkEl.value = "";
+
+
   openPopup("popup-report-bg");
   initMap();
 }
 
+
 function initMap() {
   const mapDiv = document.getElementById("map");
   if (!mapDiv) return;
+
   mapDiv.innerHTML = "";
+
   if (map) map.remove();
+
   map = L.map("map").setView(DEFAULT_CENTER, 12);
-  L.tileLayer("https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=hTUZRiAhto38o94bZonV", { maxZoom: 20, tileSize: 512, zoomOffset: -1 }).addTo(map);
-  marker = L.marker(DEFAULT_CENTER, { draggable: true }).addTo(map);
+
+  L.tileLayer(
+    "https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=hTUZRiAhto38o94bZonV",
+    {
+      maxZoom: 20,
+      tileSize: 512,
+      zoomOffset: -1
+    }
+  ).addTo(map);
+
+  marker = L.marker(DEFAULT_CENTER, {
+    draggable: true
+  }).addTo(map);
+
   marker.on("dragend", () => {
     const p = marker.getLatLng();
     updateCoords(p.lat, p.lng);
   });
+
   updateCoords(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
 
+
   document.querySelectorAll(".quick-loc").forEach(el => {
-    el.style.cursor = "pointer"; el.style.textDecoration = "underline"; el.style.color = "#2a4d69";
+
+    el.style.cursor = "pointer";
+    el.style.textDecoration = "underline";
+    el.style.color = "#2a4d69";
+
     el.onclick = function () {
+
       const lat = Number(this.dataset.lat);
       const lon = Number(this.dataset.lon);
+
       if (!isNaN(lat) && !isNaN(lon)) {
-        marker.setLatLng([lat, lon]); map.setView([lat, lon], 15); updateCoords(lat, lon);
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], 15);
+        updateCoords(lat, lon);
       }
     };
   });
 
+
   const findMeEl = document.getElementById("quick-find-me");
+
   if (findMeEl) {
-    findMeEl.style.cursor = "pointer"; findMeEl.style.textDecoration = "underline"; findMeEl.style.color = "#2a4d69";
+
+    findMeEl.style.cursor = "pointer";
+    findMeEl.style.textDecoration = "underline";
+    findMeEl.style.color = "#2a4d69";
+
     findMeEl.onclick = () => {
+
       navigator.geolocation.getCurrentPosition(pos => {
+
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
-        marker.setLatLng([lat, lon]); map.setView([lat, lon], 15); updateCoords(lat, lon);
+
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], 15);
+        updateCoords(lat, lon);
       });
     };
   }
 
+
   const saveBtn = document.getElementById("btn-save-report");
-  if (saveBtn) saveBtn.onclick = saveSelectedReports;
+
+  if (saveBtn) {
+    saveBtn.onclick = saveSelectedReports;
+  }
+
   setTimeout(() => map.invalidateSize(), 200);
 }
 
+
 function updateCoords(lat, lng) {
+
   const latInput = document.getElementById("report-lat");
   const lonInput = document.getElementById("report-lon");
-  if (latInput) latInput.value = lat.toFixed(10);
-  if (lonInput) lonInput.value = lng.toFixed(10);
+
+  if (latInput) {
+    latInput.value = lat.toFixed(10);
+  }
+
+  if (lonInput) {
+    lonInput.value = lng.toFixed(10);
+  }
 }
 
 // ------------------------------------------------------------------------
