@@ -694,25 +694,67 @@ function initLatestMap() {
 function populateLatestDropdown() {
   const sel = document.getElementById("latest-bird-filter");
   if (!sel) return;
+
   sel.innerHTML = `<option value="">Vogel auswählen</option>`;
-  const seen = new Set();
-  latestData.forEach(r => {
-    const key = `${r.name} (${r.ring_number})`;
-    if (!seen.has(key)) {
-      seen.add(key);
+
+  // Only birds that actually occur in the loaded observations
+  const observedIds = new Set(
+    latestData
+      .map(r => r.individual_id)
+      .filter(id => id !== null && id !== undefined)
+      .map(id => String(id))
+  );
+
+  birds
+    .filter(b =>
+      b.individual_id !== null &&
+      b.individual_id !== undefined &&
+      observedIds.has(String(b.individual_id))
+    )
+    .sort((a, b) =>
+      String(a.name || a.bird_id || "").localeCompare(
+        String(b.name || b.bird_id || ""),
+        "de"
+      )
+    )
+    .forEach(bird => {
       const opt = document.createElement("option");
-      opt.value = r.ring_number;
-      opt.textContent = key;
+
+      // Use database individual_id for filtering
+      opt.value = String(bird.individual_id);
+
+      // But show the nice bird name + ring number
+      opt.textContent = bird.name
+        ? `${bird.name} (${bird.bird_id})`
+        : bird.bird_id;
+
       sel.appendChild(opt);
-    }
-  });
-  sel.onchange = () => { latestBirdFilter = sel.value; renderLatestMap(); };
+    });
+
+  sel.onchange = () => {
+    latestBirdFilter = sel.value;
+    renderLatestMap();
+  };
+
   const resetBtn = document.getElementById("latest-reset");
-  if (resetBtn) resetBtn.onclick = () => { latestBirdFilter = ""; sel.value = ""; renderLatestMap(); };
+
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      latestBirdFilter = "";
+      sel.value = "";
+      renderLatestMap();
+    };
+  }
+
   const slider = document.getElementById("time-slider");
   const label = document.getElementById("days-label");
+
   if (slider && label) {
-    slider.oninput = () => { latestMaxDays = Number(slider.value); label.textContent = slider.value; renderLatestMap(); };
+    slider.oninput = () => {
+      latestMaxDays = Number(slider.value);
+      label.textContent = slider.value;
+      renderLatestMap();
+    };
   }
 }
 
@@ -727,8 +769,12 @@ function renderLatestMap() {
   latestData.forEach(r => {
     if (!r.latitude || !r.longitude || !r.date) return;
 
-    if (latestBirdFilter && r.ring_number !== latestBirdFilter) return;
+if (
+  latestBirdFilter &&
+  String(r.individual_id) !== String(latestBirdFilter)
+) return;
 
+    
     const obsDate = new Date(r.date);
     const daysOld = (now - obsDate.getTime()) / (1000 * 60 * 60 * 24);
 
