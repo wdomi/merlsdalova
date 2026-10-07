@@ -531,7 +531,7 @@ async function saveSelectedReports() {
   // ❌ LV95 Calculation Removed
 
 const dateVal = document.getElementById("report-date").value;
-const timeVal = document.getElementById("report-time").value || "";
+const timeVal = document.getElementById("report-time").value;
 const remarkVal = document.getElementById("report-remark")?.value.trim() || "";
 
   for (const entry of entries) {
@@ -543,7 +543,7 @@ const payload = {
   action: entry.action,
   latitude: lat,
   longitude: lng,
-  date: dateVal,
+date: dateVal,
 time: timeVal,
   observer: Number(observerSelect.value),
   remark: remarkVal
