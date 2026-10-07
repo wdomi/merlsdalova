@@ -86,18 +86,37 @@ export default async function handler(req, res) {
   }
 
   try {
-    const payload = {
-      individual_id: body.individual_id || null, // Allow null for unringed
-date: body.date,
-time: body.time || null,
-      latitude: body.latitude,
-      longitude: body.longitude,
-      action: actionValue,
-      capture_method: capture_method,
-      observer: body.observer, // Now comes from the dropdown (2-13)
-      remark: body.remark || null,
-      deleted: false // Default to false
-    };
+const payload = {
+  individual_id: body.individual_id || null, // Allow null for unringed
+  date: body.date,
+  time: body.time || null,
+  latitude: body.latitude,
+  longitude: body.longitude,
+  action: actionValue,
+  capture_method: capture_method,
+  observer: body.observer,
+  remark: body.remark || null,
+  deleted: false
+};
+
+// Only add ring values when they were explicitly sent by the frontend.
+// Therefore existing "Beringte melden" and "Unberingte melden"
+// remain completely unchanged.
+if (body.ring_L_t !== undefined) {
+  payload.ring_L_t = body.ring_L_t;
+}
+
+if (body.ring_L_b !== undefined) {
+  payload.ring_L_b = body.ring_L_b;
+}
+
+if (body.ring_R_t !== undefined) {
+  payload.ring_R_t = body.ring_R_t;
+}
+
+if (body.ring_R_b !== undefined) {
+  payload.ring_R_b = body.ring_R_b;
+}
 
     const { data, error } = await supabase
       .from("ind_observation")
