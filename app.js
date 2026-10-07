@@ -435,8 +435,8 @@ function openReportPopup() {
   document.getElementById("report-time").value =
     now.toTimeString().slice(0, 8);
   
-const remarksEl = document.getElementById("report-remarks");
-if (remarksEl) remarksEl.value = "";
+const remarkEl = document.getElementById("report-remark");
+if (remarkEl) remarkEl.value = "";
   
   openPopup("popup-report-bg");
   initMap();
@@ -514,7 +514,7 @@ async function saveSelectedReports() {
 
 const dateVal = document.getElementById("report-date").value;
 const timeVal = document.getElementById("report-time").value || "";
-const remarksVal = document.getElementById("report-remarks")?.value.trim() || "";
+const remarkVal = document.getElementById("report-remark")?.value.trim() || "";
 
   for (const entry of entries) {
     const actionId = ACTION_IDS[entry.action];
@@ -528,7 +528,7 @@ const payload = {
   date: dateVal,
   time_manual: timeVal,
   observer: Number(observerSelect.value),
-  remarks: remarksVal
+  remark: remarkVal
 };
 
     try {
