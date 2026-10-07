@@ -1010,29 +1010,48 @@ function renderLatestList(visible) {
       padding:8px 4px;
       border-bottom:1px solid #e6e6e6;
       cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
     `;
 
     row.innerHTML = `
-      <div>
-        <strong>
-          ${index === 0 ? "● " : ""}
-          ${birdLabel}
-        </strong>
+      <div style="flex:1; min-width:0;">
+        <div>
+          <strong>
+            ${index === 0 ? "● " : ""}
+            ${birdLabel}
+          </strong>
+        </div>
+
+        <div style="color:#555;">
+          ${formatLatestDate(r.date, r.time)}
+        </div>
+
+        ${
+          r.remark
+            ? `<div style="color:#777; margin-top:2px;">
+                 ${r.remark}
+               </div>`
+            : ""
+        }
       </div>
 
-      <div style="color:#555;">
-        ${formatLatestDate(r.date, r.time)}
-      </div>
-
-      ${
-        r.remark
-          ? `<div style="color:#777; margin-top:2px;">
-               ${r.remark}
-             </div>`
-          : ""
-      }
+      <a href="#"
+         class="latest-delete-link"
+         style="
+           flex-shrink:0;
+           font-size:11px;
+           color:#c33;
+           text-decoration:underline;
+           margin-top:2px;
+         ">
+        delete
+      </a>
     `;
 
+    // Clicking the row -> show observation on map
     row.onclick = () => {
       const lat = Number(r.latitude);
       const lon = Number(r.longitude);
@@ -1048,6 +1067,16 @@ function renderLatestList(visible) {
           r._latestMarker.openPopup();
         }
       }
+    };
+
+    // Clicking delete -> ONLY mark deleted = true
+    const deleteLink = row.querySelector(".latest-delete-link");
+
+    deleteLink.onclick = async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      await deleteObservation(r.id);
     };
 
     container.appendChild(row);
