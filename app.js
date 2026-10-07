@@ -793,10 +793,7 @@ function formatLatestDate(value) {
 
 
 function renderLatestList(visible) {
-
-  const container =
-    document.getElementById("latest-observations-list");
-
+  const container = document.getElementById("latest-observations-list");
   if (!container) return;
 
   const observations = visible.slice(0, 10);
@@ -814,6 +811,25 @@ function renderLatestList(visible) {
 
   observations.forEach((r, index) => {
 
+    // Match observation to the same bird data used in the normal list
+    const birdData = birds.find(b =>
+      String(b.individual_id) === String(r.individual_id)
+    );
+
+    let birdLabel;
+
+    if (birdData) {
+      birdLabel = birdData.name || birdData.bird_id || "Unbekannt";
+
+      if (birdData.name && birdData.bird_id) {
+        birdLabel += ` (${birdData.bird_id})`;
+      }
+    } else if (!r.individual_id) {
+      birdLabel = "Unberingt";
+    } else {
+      birdLabel = "Unbekannt";
+    }
+
     const row = document.createElement("div");
 
     row.style.cssText = `
@@ -822,21 +838,11 @@ function renderLatestList(visible) {
       cursor:pointer;
     `;
 
-    const bird =
-      r.name ||
-      r.ring_number ||
-      "Unbekannt";
-
-    const ring =
-      r.ring_number
-        ? ` (${r.ring_number})`
-        : "";
-
     row.innerHTML = `
       <div>
         <strong>
           ${index === 0 ? "● " : ""}
-          ${bird}${ring}
+          ${birdLabel}
         </strong>
       </div>
 
@@ -854,12 +860,10 @@ function renderLatestList(visible) {
     `;
 
     row.onclick = () => {
-
       const lat = Number(r.latitude);
       const lon = Number(r.longitude);
 
       if (!isNaN(lat) && !isNaN(lon)) {
-
         latestMap.flyTo(
           [lat, lon],
           Math.max(latestMap.getZoom(), 15),
