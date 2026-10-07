@@ -373,13 +373,19 @@
       <input id="time-slider" type="range" min="1" max="365" step="1" value="30" style="width:100%;">
     </div>
 
-    <div id="latest-map" style="height:300px; border-radius:8px;"></div>
-
-    <button class="submit-btn submit-btn-ghost" style="margin-top:8px;"
-      onclick="closePopup('popup-latest-bg')">
-      Schliessen
-    </button>
-  </div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button
+          id="btn-reshuffle-combinations"
+          class="submit-btn submit-btn-primary">
+          Neu mischen
+        </button>
+      
+        <button
+          class="submit-btn submit-btn-ghost"
+          onclick="closePopup('popup-combinations-bg')">
+          Schliessen
+        </button>
+      </div>
 </div>
 
 <!-- new : 26-01-02 9:02 -->
