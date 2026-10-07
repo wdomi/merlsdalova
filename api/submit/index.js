@@ -85,6 +85,7 @@ export default async function handler(req, res) {
       action: actionValue,
       capture_method: capture_method,
       observer: body.observer, // Now comes from the dropdown (2-13)
+      remarks: body.remarks || null,
       deleted: false // Default to false
     };
 
