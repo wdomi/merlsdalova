@@ -860,20 +860,22 @@ marker.bindPopup(`
 }
 
 
-function formatLatestDate(value) {
-  if (!value) return "—";
+function formatLatestDate(dateValue, timeValue) {
+  if (!dateValue) return "—";
 
-  const d = new Date(value);
+  const parts = String(dateValue).split("-");
+  let formattedDate = dateValue;
 
-  if (isNaN(d.getTime())) return value;
+  if (parts.length === 3) {
+    formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+  }
 
-  return d.toLocaleString("de-CH", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  if (timeValue) {
+    const formattedTime = String(timeValue).slice(0, 5);
+    return `${formattedDate}, ${formattedTime}`;
+  }
+
+  return formattedDate;
 }
 
 
