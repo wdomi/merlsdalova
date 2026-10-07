@@ -344,13 +344,17 @@ function setupButtons() {
     perBirdSelection.set("unringed", "sighted");
     openReportPopup();
   };
+  
+
   const ringsUnknownBtn = document.getElementById("btn-rings-unknown");
 
 if (ringsUnknownBtn) ringsUnknownBtn.onclick = () => {
   perBirdSelection.clear();
-  perBirdSelection.set("rings_unknown", "sighted");
+  perBirdSelection.set("1073", "sighted");
   openReportPopup();
 };
+
+  
   const latestLink = document.getElementById("lnk-latest");
   if (latestLink) latestLink.onclick = e => { e.preventDefault(); loadLatest(); };
   const combinationsBtn = document.getElementById("btn-combinations");
@@ -387,17 +391,17 @@ function openReportPopup() {
     territory: ""
   };
 
-} else if (birdId === "rings_unknown") {
-
+if (birdId === "unringed") {
   bird = {
     bird_id: "",
-    name: "Beringung unklar",
-    territory: "",
-    ring_L_t: 99,
-    ring_L_b: 99,
-    ring_R_t: 99,
-    ring_R_b: 99
+    name: "unberingt",
+    territory: ""
   };
+} else {
+  bird = birds.find(b =>
+    String(b.bird_id ?? "") === birdId
+  );
+}
 
 } else {
 
@@ -643,13 +647,6 @@ const payload = {
   remark: remarkVal
 };
 
-// Only for "Beringung unklar"
-if (entry.bird.report_type === "rings_unknown") {
-  payload.ring_L_t = 99;
-  payload.ring_L_b = 99;
-  payload.ring_R_t = 99;
-  payload.ring_R_b = 99;
-}
 
     try {
       if (!navigator.onLine) addToOfflineQueue(payload);
