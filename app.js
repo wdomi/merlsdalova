@@ -314,10 +314,22 @@ function renderBirds() {
 // ------------------------------------------------------------------------
 
 function setupButtons() {
+function setupButtons() {
   const resetBtn = document.getElementById("btn-reset");
+
   if (resetBtn) resetBtn.onclick = () => {
-    selectedLeft = []; selectedRight = []; perBirdSelection.clear();
-    document.querySelectorAll(".color-button").forEach(b => b.classList.remove("selected"));
+    selectedLeft = [];
+    selectedRight = [];
+    perBirdSelection.clear();
+
+    document.querySelectorAll(".color-button")
+      .forEach(b => b.classList.remove("selected"));
+
+    // Clear search field
+    const searchEl = document.getElementById("bird-search");
+    if (searchEl) searchEl.value = "";
+    birdSearchQuery = "";
+
     renderBirds();
   };
   const searchEl = document.getElementById("bird-search");
