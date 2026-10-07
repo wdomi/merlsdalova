@@ -383,20 +383,20 @@ function openReportPopup() {
 
   bird = {
     bird_id: "",
-    individual_id: null,
     name: "unberingt",
-    territory: "",
-    report_type: "unringed"
+    territory: ""
   };
 
 } else if (birdId === "rings_unknown") {
 
   bird = {
     bird_id: "",
-    individual_id: null,
     name: "Beringung unklar",
     territory: "",
-    report_type: "rings_unknown"
+    ring_L_t: 99,
+    ring_L_b: 99,
+    ring_R_t: 99,
+    ring_R_b: 99
   };
 
 } else {
