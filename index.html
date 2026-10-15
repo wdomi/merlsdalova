@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dipper-Finder</title>
+
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#2a4d69" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --muted: #666;
+      --accent: #2a4d69;
+      --bg: #f8f8f8;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      margin: 0;
+      padding: 12px;
+      background: var(--bg);
+      color: #222;
+    }
+
+    header { display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+    .header-top-row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    h1 { font-size:24px; margin:0; display:flex; align-items:center; gap:8px; }
+    .bird-img { width:48px; height:48px; }
+
+    .header-buttons { display:flex; flex-direction:column; gap:6px; }
+    .round-btn {
+      padding:4px 9px; border-radius:999px; border:1px solid #bbb;
+      font-size:12px; cursor:pointer; background:#eee; color:#222;
+      text-decoration:none; text-align:center;
+    }
+    .round-btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+    .top-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .reset-btn { padding:6px 12px; border-radius:999px; border:1px solid #bbb; background:#eee; cursor:pointer; }
+
+    .section {
+      background:white; border-radius:10px; padding:8px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0;
+    }
+    
+/* Makes the dropdown background dark and text white when an action is selected */
+.action-select.has-value {
+  background-color: #2a4d69 !important; /* Your accent color */
+  color: #ffffff !important;
+  border-color: #2a4d69 !important;
+  font-weight: 600;
+}
+    
+    .leg-title { font-weight:600; margin:4px 4px 6px; font-size:14px; }
+
+    .color-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+    .color-button {
+      font-size:12px; font-weight:700; height:30px;
+      border-radius:8px; border:2px solid transparent; cursor:pointer;
+      color:white;
+    }
+    .color-button.selected { border-color:#000; }
+
+    .submit-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .submit-btn {
+      padding:6px 7px; border-radius:999px; border:1px solid #bbb;
+      cursor:pointer; font-size:11px;
+    }
+    .submit-btn-primary { background:var(--accent); color:white; border-color:var(--accent); }
+    .submit-btn-ghost { background:#eee; }
+
+    .selected-action {
+  background: #2a4d69 !important;   /* same as accent */
+  color: #fff !important;
+  border-color: #2a4d69 !important;
+  font-weight: 600;
+}
+
+    
+    .inline-link {
+      font-size:13px;
+      color:var(--accent);
+      text-decoration:underline;
+      cursor:pointer;
+    }
+
+    table { width:100%; border-collapse:collapse; }
+    th, td { 
+      padding:5px 8px; 
+      border-bottom:1px solid #e6e6e6; 
+      font-size:11px; 
+      vertical-align: middle;
+      /* white-space: nowrap; */
+    }
+
+
+
+/*    td:nth-child(1), 
+    td:nth-child(3), 
+    td:nth-child(5){ 
+      white-space: normal; }  */
+    
+
+    .popup-bg {
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center; z-index:1000;
+    }
+    .popup {
+      background:#fff; border-radius:10px; max-width:420px;
+      width:95%; padding:14px; max-height:90vh; overflow:auto;
+    }
+
+    #map { height:260px; border-radius:8px; margin-top:6px; }
+
+    .field-row {
+      display:flex;
+      gap:6px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+    .field-row input {
+      flex:1;
+      padding:4px;
+    }
+
+
+
+/* new : 26-01-02 9:02 */
+    .leaflet-popup-content {
+  font-size: 12px;
+}
+/* end */
+
+
+
+    
+/* ===================== RING COMBINATIONS ===================== */
+
+.combination-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 2px;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.combination-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ring-dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid #777;
+  box-sizing: border-box;
+  flex: 0 0 17px;
+}
+
+.combination-text {
+  font-size: 12px;
+}
+
+.combination-key {
+  font-size: 10px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.combinations-count {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+
+    
+  
+
+/* Responsive mobile layout: desktop styling remains unchanged */
+@media (max-width: 650px) {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  body { padding: 10px; }
+  .section { min-width: 0; padding: 10px; }
+  .header-top-row { min-width: 0; }
+  h1 { font-size: clamp(19px, 5.5vw, 24px); min-width: 0; }
+  .bird-img { width: 38px; height: 38px; object-fit: contain; }
+  .header-buttons { flex-shrink: 0; }
+  .color-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .color-button { width: 100%; min-width: 0; font-size: 12px; padding: 0 2px; }
+  .submit-row { gap: 7px; }
+  .submit-btn { font-size: 12px; padding: 8px 10px; }
+  #lnk-latest { flex-basis: 100%; margin-top: 3px; }
+  .bird-list-heading { flex-wrap: wrap; gap: 8px !important; }
+  .bird-list-heading h3 { width: 100%; }
+  #bird-search { flex: 1 1 100% !important; max-width: none !important; width: 100%; font-size: 16px !important; }
+  .bird-table, .bird-table tbody, .bird-table tr, .bird-table td { display: block; width: 100%; }
+  .bird-table thead { display: none; }
+  .bird-table tr { border: 1px solid #e4e4e4; border-radius: 10px; padding: 10px; margin: 0 0 10px; background: #fff; }
+  .bird-table td { border: 0; padding: 3px 0; font-size: 13px; overflow-wrap: anywhere; }
+  .bird-table td:first-child { font-weight: 650; font-size: 15px; }
+  .bird-table td:first-child .tag { font-weight: 400; font-size: 12px; }
+  .bird-table td:nth-child(2) { color: #555; }
+  .bird-table td:nth-child(3) { margin: 5px 0; }
+  .bird-table td:nth-child(3) > div { width: max-content; }
+  .bird-table .bird-action-select { display: block; width: 100% !important; min-width: 0 !important; max-width: 100%; font-size: 16px; }
+  .popup-bg { padding: 10px; }
+  .popup { width: 100%; max-width: 420px; max-height: calc(100dvh - 20px); overflow-y: auto; }
+  .datetime-row { flex-wrap: wrap; }
+  .datetime-row input { min-width: 0; width: 0; flex: 1 1 130px !important; }
+  .field-row input, .field-row select { min-width: 0; }
+  #latest-bird-filter { min-width: 0; }
+  .combination-row { grid-template-columns: minmax(0, 90px) minmax(0, 1fr); }
+  .combination-text { overflow-wrap: anywhere; }
+}
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-top-row">
+    <h1>
+      <img src="/favicon.png" class="bird-img">
+      Dipper Finder
+    </h1>
+    <div class="header-buttons">
+      <!-- <a href="https://cinclopedia.wildata.ch" class="round-btn round-btn-primary">Home</a> -->
+      <a href="https://nest-logger.vercel.app" class="round-btn round-btn-primary">Nest Logger</a>
+      <!-- <a href="https://wdomi.github.io/dipper_map/" class="round-btn round-btn-primary">Nests Map</a> -->
+    </div>
+  </div>
+
+<div class="top-actions">
+  <button id="btn-reset" class="reset-btn">Zurücksetzen</button>
+  <button id="btn-combinations" class="reset-btn">Kombi</button>
+</div>
+</header>
+
+<!-- ===================== RING FILTERS ===================== -->
+
+<div class="section">
+  <div class="leg-title">Linkes Bein</div>
+  <div id="left-leg" class="color-grid"></div>
+</div>
+
+<div class="section">
+  <div class="leg-title">Rechtes Bein</div>
+  <div id="right-leg" class="color-grid"></div>
+</div>
+
+<!-- ===================== ACTION BUTTONS ===================== -->
+
+<div class="section submit-area">
+  <div class="submit-row">
+    <button id="btn-report" class="submit-btn submit-btn-primary">Beringte melden</button>
+    <button id="btn-unringed" class="submit-btn submit-btn-ghost">Unberingte melden</button>
+    <button id="btn-rings-unknown" class="submit-btn submit-btn-ghost">Beringung unklar</button>
+
+    <a href="#" id="lnk-latest" class="inline-link">
+      Letzte Beobachtungen
+    </a>
+  </div>
+</div>
+
+<!-- ===================== BIRD LIST ===================== -->
+
+<div class="section">
+ <!-- <div style="display:flex; align-items:center; gap:12px; margin:4px 2px 8px;">  -->
+ <div class="bird-list-heading" style="display:flex; align-items:center; justify-content:flex-start; gap:12px; margin:4px 2px 8px;">
+ <h3 style="margin:0;">Alle Vögel</h3>
+
+  <input
+    id="bird-search"
+    type="text"
+    placeholder="Name oder Ring-ID suchen…"
+    style="
+      flex:1;
+      max-width:260px;
+      padding:6px 10px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:12px;
+    "
+  />
+</div>
+
+  <table class="bird-table">
+    <thead>
+  <tr>
+    <th style="vertical-align: middle; text-align: left;">Name (ID)</th>
+    <th style="vertical-align: middle; text-align: left;">Revier (Dist m)<br>beringt am</th>
+    <th style="vertical-align: middle; text-align: center;">L↑↓ | R↑↓</th>        
+    <th style="vertical-align: middle; text-align: right;">Aktionen</th>
+  </tr>
+</thead>
+    <tbody id="birds-body"></tbody>
+  </table>
+</div>
+
+
+  
+<!-- ===================== REPORT POPUP ===================== -->
+
+<div id="popup-report-bg" class="popup-bg">
+  <div class="popup">
+    <h3>Beobachtung melden</h3>
+    <p id="popup-bird-info"></p>
+
+<!-- 1. OBSERVER DROPDOWN (Default: "auswählen...") -->
+<div class="field-row" style="margin-bottom: 10px;">
+  <label for="observer-select" style="font-size: 13px; font-weight: 600; width: 100%;">Beobachter:</label>
+  <select id="observer-select" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+    <!-- Default Option -->
+    <option value="" disabled selected>auswählen...</option>
+    
+    <!-- Observers (Alphabetical, no default selected) -->
+    <option value="2">Lukas</option>
+    <option value="3">Dominique</option>
+    <option value="4">Iris</option>
+    <option value="9">Claudia</option>
+    <option value="10">Curdin</option>
+    <option value="7">Claudio</option>
+    <option value="6">Steivan</option>
+    <option value="8">Fadri S</option>
+    <option value="5">Glauco</option>
+    <option value="11">Fadri B</option>
+    <option value="13">other</option>
+  </select>
+</div>
+
+    <!-- 2. DATE & TIME (Wrapped in their own container) -->
+    <div class="datetime-row" style="display: flex; gap: 6px; margin-bottom: 10px;">
+      <input type="date" id="report-date" style="flex: 1; padding: 6px;">
+      <input type="time" id="report-time" step="1" style="flex: 1; padding: 6px;">
+    </div>
+
+    <!-- 3. MAP -->
+    <div id="map" style="height: 260px; border-radius: 8px; margin-bottom: 10px;"></div>
+
+    <!-- 4. MANUAL COORDINATES -->
+    <div class="field-row">
+      <input type="number" id="report-lat" step="0.0000000001" placeholder="Latitude" style="flex: 1; padding: 4px;">
+      <input type="number" id="report-lon" step="0.0000000001" placeholder="Longitude" style="flex: 1; padding: 4px;">
+    </div>
+
+
+    <!-- 5. REMARKS -->
+<div class="field-row" style="margin-top: 10px;">
+  <textarea
+    id="report-remark"
+    placeholder="Bemerkungen"
+    rows="3"
+    style="
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+    "
+  ></textarea>
+</div>
+
+    
+    <!-- 5. BOTTOM ACTIONS (Find Me + Buttons + Locations) -->
+    <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+      
+      <!-- Left Side: Find Me + Save Button -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div id="quick-find-me" style="font-size: 13px; text-decoration: underline; color: #2a4d69; cursor: pointer;">
+          Finde mich
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button id="btn-save-report" class="submit-btn submit-btn-primary">Speichern</button>
+          <button class="submit-btn submit-btn-ghost" onclick="closePopup('popup-report-bg')">Schliessen</button>
+        </div>
+      </div>
+
+      <!-- Right Side: Quick Locations -->
+      <div id="quick-locations" style="font-size: 13px; text-align: right; line-height: 1.6;">
+        <div class="quick-loc" data-lat="46.637634" data-lon="10.181809" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">obere Spöl</div>
+        <div class="quick-loc" data-lat="46.691645" data-lon="10.125708" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">untere Spöl</div>
+        <div class="quick-loc" data-lat="46.618562" data-lon="10.351977" style="cursor: pointer; color: #2a4d69; text-decoration: underline;">Rom</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LATEST OBSERVATIONS POPUP ===================== -->
+
+<div id="popup-latest-bg" class="popup-bg">
+  <div class="popup">
+
+<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+  <h3 style="margin:0;">Letzte Beobachtungen</h3>
+
+  <button
+    class="submit-btn submit-btn-ghost"
+    onclick="closePopup('popup-latest-bg')">
+    Schliessen
+  </button>
+</div>
+
+    
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+      <select id="latest-bird-filter" style="flex:1; padding:6px;">
+        <option value="">Vogel auswählen</option>
+      </select>
+
+      <button
+        id="latest-reset"
+        class="submit-btn submit-btn-ghost">
+        Reset
+      </button>
+    </div>
+
+    <div style="margin-bottom:6px;">
+      <label style="font-size:12px;">
+        Letzte <span id="days-label">–</span> Tage
+      </label>
+
+      <input
+        id="time-slider"
+        type="range"
+        min="1"
+        max="365"
+        step="1"
+        value="30"
+        style="width:100%;">
+    </div>
+
+    <div
+      id="latest-map"
+      style="height:300px; border-radius:8px;">
+    </div>
+
+<div style="margin-top:12px;">
+  <div style="font-size:13px; font-weight:600; margin-bottom:6px;">
+    Letzte 10 Beobachtungen
+  </div>
+
+  <div id="latest-observations-list"
+       style="font-size:12px;">
+  </div>
+</div>
+
+  </div>
+</div>
+
+<!-- new : 26-01-02 9:02 -->
+
+
+
+<!-- ===================== FREE RING COMBINATIONS POPUP ===================== -->
+
+<div id="popup-combinations-bg" class="popup-bg">
+  <div class="popup">
+
+    <h3>Freie Ringkombinationen</h3>
+
+    <div id="combinations-count" class="combinations-count">
+      Lade...
+    </div>
+
+    <div id="combinations-list">
+      Lade...
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:12px;">
+
+      <button
+        id="btn-reshuffle-combinations"
+        class="submit-btn submit-btn-primary">
+        Neu mischen
+      </button>
+
+      <button
+        class="submit-btn submit-btn-ghost"
+        onclick="closePopup('popup-combinations-bg')">
+        Schliessen
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+
+
+  
+<script src="/app.js"></script>
+</body>
+</html>
