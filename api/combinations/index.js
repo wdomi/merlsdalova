@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { checkAccess } from "../../lib/checkAccess.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -45,6 +46,8 @@ async function loadDoubleColourCombinations() {
 }
 
 export default async function handler(req, res) {
+  if (!checkAccess(req, res)) return;
+
   try {
 
     if (req.query?.mode === "double") {

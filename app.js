@@ -94,6 +94,36 @@ const COLOR_LABELS = { black_nr: "black #" };
 const COLOR_ORDER = ["alu","white","red","yellow","green","blue","rosa","pink","violet","bronze","black","black_nr"];
 
 // ------------------------------------------------------------------------
+// ACCESS CODE (sent with every API call, asked once and stored on device)
+// ------------------------------------------------------------------------
+
+const ACCESS_CODE_KEY = "merlotschadaua_access_code";
+
+function getAccessCode() {
+  try { return localStorage.getItem(ACCESS_CODE_KEY) || ""; } catch { return ""; }
+}
+
+function askAccessCode() {
+  const code = (prompt("Zugangscode für Merls da l'Ova:") || "").trim();
+  try { localStorage.setItem(ACCESS_CODE_KEY, code); } catch {}
+  return code;
+}
+
+async function apiFetch(url, options = {}) {
+  const send = code => fetch(url, {
+    ...options,
+    headers: { ...(options.headers || {}), "X-Access-Code": code }
+  });
+
+  let res = await send(getAccessCode());
+  if (res.status === 401) {
+    const code = askAccessCode();
+    if (code) res = await send(code);
+  }
+  return res;
+}
+
+// ------------------------------------------------------------------------
 // INIT
 // ------------------------------------------------------------------------
 
@@ -108,7 +138,7 @@ window.addEventListener("load", () => {
 // ------------------------------------------------------------------------
 async function loadIndividuals() {
   try {
-    const r = await fetch("/api/individuals");
+    const r = await apiFetch("/api/individuals");
 
     if (!r.ok) {
       throw new Error("API Error: " + r.status);
@@ -693,7 +723,7 @@ const payload = {
 // ------------------------------------------------------------------------
 
 async function sendToServer(payload) {
-  const res = await fetch("/api/submit", {
+  const res = await apiFetch("/api/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -718,7 +748,7 @@ let latestMaxDays = 14;
 async function loadLatest() {
   openPopup("popup-latest-bg");
   try {
-    const r = await fetch("/api/submit", {
+    const r = await apiFetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: "list" })
@@ -1107,7 +1137,7 @@ async function deleteObservation(id) {
   const ok = confirm("Möchtest du wirklich die Beobachtung löschen?");
   if (!ok) return;
   try {
-    const res = await fetch("/api/submit", {
+    const res = await apiFetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode: "set_deleted", id: id, deleted: true })
@@ -1145,7 +1175,7 @@ async function loadCombinations() {
 
   try {
 
-    const r = await fetch(
+    const r = await apiFetch(
       combinationsDoubleMode ? "/api/combinations?mode=double" : "/api/combinations"
     );
 
