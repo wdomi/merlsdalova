@@ -80,11 +80,18 @@ const COLOR_PALETTE = {
   green: "#227722",
   blue: "#4b77b8",
   violet: "#6e009e",
-  pink: "#f58ac7",
-  black: "#222"
+  rosa: "#f58ac7",
+  pink: "#e6007e",
+  bronze: "#a0672d",
+  black: "#222",
+  black_nr: "#222",
+  metal: "#808080"
 };
 
-const COLOR_ORDER = ["alu","white","red","yellow","green","blue","pink","violet","black"];
+// Short labels where the colour name doesn't fit (default: the name itself)
+const COLOR_LABELS = { black_nr: "black #" };
+
+const COLOR_ORDER = ["alu","white","red","yellow","green","blue","rosa","pink","violet","bronze","black","black_nr"];
 
 // ------------------------------------------------------------------------
 // INIT
@@ -152,7 +159,7 @@ function buildColorButtons() {
     COLOR_ORDER.forEach(color => {
       const btn = document.createElement("button");
       btn.className = "color-button";
-      btn.textContent = color;
+      btn.textContent = COLOR_LABELS[color] || color;
       btn.style.background = COLOR_PALETTE[color];
       btn.style.color = color === "white" ? "#000" : "#fff";
       btn.onclick = () => toggleColor(side, color, btn);
@@ -193,7 +200,7 @@ function colorPill(c) {
   if (!c) return "";
   const hex = COLOR_PALETTE[c] || "#777";
   const text = c === "white" ? "#000" : "#fff";
-  return `<span style="background:${hex};color:${text};padding:1px 3px;border-radius:3px;font-size:10px;line-height:1;display:inline-block;">${c.slice(0,3)}</span>`;
+  return `<span style="background:${hex};color:${text};padding:1px 3px;border-radius:3px;font-size:10px;line-height:1;display:inline-block;">${c === "black_nr" ? "bl#" : c.slice(0,3)}</span>`;
 }
 
 

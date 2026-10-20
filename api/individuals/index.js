@@ -7,7 +7,8 @@ const supabase = createClient(
 
 const RING_ID_TO_COLOR = {
   1: "alu", 2: "white", 3: "black", 4: "yellow", 5: "red",
-  6: "blue", 7: "green", 8: "pink", 9: "violet"
+  6: "blue", 7: "green", 8: "rosa", 9: "violet",
+  10: "pink", 11: "bronze", 12: "black_nr"
 };
 
 const SEX_MAP = { 1: "U", 2: "F", 3: "M" };
