@@ -1,6 +1,6 @@
 // Basic offline support + MapTiler tile caching
 
-const APP_CACHE = "merlotschadaua-app-v2";
+const APP_CACHE = "merlotschadaua-app-v3";
 const TILE_CACHE = "merlotschadaua-tiles-v1";
 
 const APP_ASSETS = [
@@ -8,7 +8,6 @@ const APP_ASSETS = [
   "/index.html",
   "/app.js",
   "/manifest.json",
-  "/data/view_birdsCSV_apps.csv",
   "/favicon.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png"
