@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { checkAccess } from "../../lib/checkAccess.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -15,8 +14,6 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
-  if (!checkAccess(req, res)) return;
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });

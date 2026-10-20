@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { checkAccess } from "../../lib/checkAccess.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -15,8 +14,6 @@ const RING_ID_TO_COLOR = {
 const SEX_MAP = { 1: "U", 2: "F", 3: "M" };
 
 export default async function handler(req, res) {
-  if (!checkAccess(req, res)) return;
-
   try {
     // STEP 1: Fetch Individuals ONLY (No joins, no constraints needed)
     const { data: individuals, error: indError } = await supabase
