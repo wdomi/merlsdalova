@@ -374,7 +374,15 @@ if (ringsUnknownBtn) ringsUnknownBtn.onclick = () => {
   const latestLink = document.getElementById("lnk-latest");
   if (latestLink) latestLink.onclick = e => { e.preventDefault(); loadLatest(); };
   const combinationsBtn = document.getElementById("btn-combinations");
-if (combinationsBtn) combinationsBtn.onclick = loadCombinations;
+if (combinationsBtn) combinationsBtn.onclick = () => {
+  combinationsDoubleMode = false;
+  loadCombinations();
+};
+  const doubleBtn = document.getElementById("btn-combinations-double");
+if (doubleBtn) doubleBtn.onclick = () => {
+  combinationsDoubleMode = !combinationsDoubleMode;
+  loadCombinations();
+};
   const reshuffleBtn = document.getElementById("btn-reshuffle-combinations");
 if (reshuffleBtn) reshuffleBtn.onclick = loadCombinations;
 }
@@ -1119,9 +1127,15 @@ async function deleteObservation(id) {
 // FREE RING COMBINATIONS
 // ------------------------------------------------------------------------
 
+// "US" button: only combinations with the same colour twice on one leg
+let combinationsDoubleMode = false;
+
 async function loadCombinations() {
 
   openPopup("popup-combinations-bg");
+
+  const doubleBtn = document.getElementById("btn-combinations-double");
+  if (doubleBtn) doubleBtn.classList.toggle("selected-action", combinationsDoubleMode);
 
   const list = document.getElementById("combinations-list");
   const count = document.getElementById("combinations-count");
@@ -1131,7 +1145,9 @@ async function loadCombinations() {
 
   try {
 
-    const r = await fetch("/api/combinations");
+    const r = await fetch(
+      combinationsDoubleMode ? "/api/combinations?mode=double" : "/api/combinations"
+    );
 
     if (!r.ok) {
       throw new Error("API Error: " + r.status);
@@ -1140,7 +1156,7 @@ async function loadCombinations() {
     const combinations = await r.json();
 
     count.textContent =
-      `${combinations.length} freie Kombinationen | Links oben/unten | Rechts oben/unten`;
+      `${combinations.length} freie Kombinationen${combinationsDoubleMode ? " mit Doppelfarbe" : ""} | Links oben/unten | Rechts oben/unten`;
 
     if (!combinations.length) {
       list.innerHTML = "Keine freien Kombinationen.";

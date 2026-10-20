@@ -176,6 +176,13 @@
   margin-top: 2px;
 }
 
+.combinations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
 .combinations-count {
   font-size: 12px;
   color: #666;
@@ -471,7 +478,15 @@
 <div id="popup-combinations-bg" class="popup-bg">
   <div class="popup">
 
-    <h3>Freie Ringkombinationen</h3>
+    <div class="combinations-header">
+      <h3>Freie Ringkombinationen</h3>
+      <button
+        id="btn-combinations-double"
+        class="reset-btn"
+        title="10 freie Kombinationen mit doppelter Farbe an einem Bein">
+        US
+      </button>
+    </div>
 
     <div id="combinations-count" class="combinations-count">
       Lade...
