@@ -39,7 +39,12 @@ export default async function handler(req, res) {
     }
 
     const birds = (data || [])
-      .filter(b => b.ring_L_t || b.ring_L_b || b.ring_R_t || b.ring_R_b)
+      .filter(b => {
+        const ids = [b.ring_L_t, b.ring_L_b, b.ring_R_t, b.ring_R_b].filter(id => id != null);
+        // Skip unringed birds and placeholders such as "unclear_ring_status"
+        // (ring code 99, which is not a colour)
+        return ids.length > 0 && ids.every(id => RING_ID_TO_COLOR[id]);
+      })
       .map(b => ({
         id: b.id,
         name: b.name || "",
