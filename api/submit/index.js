@@ -96,6 +96,8 @@ const payload = {
   capture_method: capture_method,
   observer: body.observer,
   remark: body.remark || null,
+  ageclass_id: Number.isInteger(body.ageclass_id) ? body.ageclass_id : null,
+  eyecolor_id: Number.isInteger(body.eyecolor_id) ? body.eyecolor_id : null,
   deleted: false
 };
 

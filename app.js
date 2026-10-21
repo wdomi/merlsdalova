@@ -520,11 +520,44 @@ if (birdId === "unringed") {
   const remarkEl = document.getElementById("report-remark");
   if (remarkEl) remarkEl.value = "";
 
+  // Reset age class and eye colour, fill their options once
+  loadReportLookups();
+  ["report-ageclass", "report-eyecolor"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
 
   openPopup("popup-report-bg");
   initMap();
 }
 
+
+let reportLookupsLoaded = false;
+
+async function loadReportLookups() {
+  if (reportLookupsLoaded || !navigator.onLine) return;
+  try {
+    const r = await fetch("/api/lookups");
+    if (!r.ok) return;
+    const data = await r.json();
+    const fill = (id, rows, label) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      rows.forEach(row => {
+        const opt = document.createElement("option");
+        opt.value = row.id;
+        opt.textContent = label(row);
+        el.appendChild(opt);
+      });
+    };
+    fill("report-ageclass", data.age_categories || [], a => `${a.code} – ${a.name || ""}`);
+    fill("report-eyecolor", data.eye_color_categories || [], e => `${e.code} – ${e.remark || ""}`);
+    reportLookupsLoaded = true;
+  } catch (err) {
+    console.warn("Lookups not loaded:", err);
+  }
+}
 
 function initMap() {
   const mapDiv = document.getElementById("map");
@@ -658,6 +691,8 @@ async function saveSelectedReports() {
 const dateVal = document.getElementById("report-date").value;
 const timeVal = document.getElementById("report-time").value;
 const remarkVal = document.getElementById("report-remark")?.value.trim() || "";
+const ageclassVal = document.getElementById("report-ageclass")?.value || "";
+const eyecolorVal = document.getElementById("report-eyecolor")?.value || "";
 
   for (const entry of entries) {
     const actionId = ACTION_IDS[entry.action];
@@ -671,7 +706,9 @@ const payload = {
   date: dateVal,
   time: timeVal,
   observer: Number(observerSelect.value),
-  remark: remarkVal
+  remark: remarkVal,
+  ageclass_id: ageclassVal ? Number(ageclassVal) : null,
+  eyecolor_id: eyecolorVal ? Number(eyecolorVal) : null
 };
 
 
