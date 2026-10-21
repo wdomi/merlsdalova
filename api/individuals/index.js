@@ -43,12 +43,11 @@ export default async function handler(req, res) {
 
     // STEP 2: Ringing place from the view: nest (nest_ringing) or transect
     // (transect_id_ringing, auto-computed from the coordinates in the DB).
-    // The old nest_id_birth_ringing / nest_id_adult_ringing are deprecated.
     let locationMap = {};
 
     const { data: locations, error: locError } = await supabase
       .from("v_individual_location")
-      .select("individual_id, nest_display_name, transect_display_name, distance_from_pdg_m");
+      .select("individual_id, river_code, transect_code, transect_name, distance_from_pdg_m");
 
     if (!locError && locations) {
       locations.forEach(l => {
@@ -62,15 +61,11 @@ export default async function handler(req, res) {
     const birds = individuals.map(b => {
 
       const loc = locationMap[b.id];
-      let territory = "undefined";
-      let dist = null;
-
-      if (loc?.nest_display_name) {
-        territory = loc.nest_display_name;
-        dist = loc.distance_from_pdg_m ?? null;
-      } else if (loc?.transect_display_name) {
-        territory = loc.transect_display_name;
-      }
+      // "SP – PuntPeriv": river abbreviation and transect name; distance from
+      // Punt dal Gall only exists for birds ringed at a nest.
+      const territory = [loc?.river_code, loc?.transect_name || loc?.transect_code]
+        .filter(Boolean).join(" – ");
+      const dist = loc?.distance_from_pdg_m ?? null;
 
       return {
         individual_id: b.id,

@@ -227,7 +227,7 @@ function renderBirds() {
   </td>
 
   <td>
-    ${b.territory || ""}${b.dist != null ? ` (${b.dist})` : ""}<br>
+    ${b.territory || ""}${b.dist != null ? ` (${b.dist} m)` : ""}<br>
     ${b.banded_on || ""}
   </td>
 
