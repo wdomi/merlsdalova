@@ -227,7 +227,7 @@ function renderBirds() {
   </td>
 
   <td>
-    ${b.territory || ""}${b.dist != null ? ` (${b.dist})` : ""}<br>
+    ${b.territory || ""}${b.dist != null ? ` (${b.dist} m)` : ""}<br>
     ${b.banded_on || ""}
   </td>
 
@@ -648,7 +648,10 @@ async function saveSelectedReports() {
   const lat = Number(latInput.value);
   const lng = Number(lonInput.value);
   
-  if (isNaN(lat) || isNaN(lng)) { alert("Ungültige Koordinaten."); return; }
+  // Empty fields would become 0/0; the database needs real coordinates
+  // to compute the transect of the observation
+  if (latInput.value.trim() === "" || lonInput.value.trim() === "" ||
+      isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) { alert("Ungültige Koordinaten."); return; }
 
   // ❌ LV95 Calculation Removed
 

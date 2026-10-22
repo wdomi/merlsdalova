@@ -15,7 +15,7 @@ const SEX_MAP = { 1: "U", 2: "F", 3: "M" };
 
 export default async function handler(req, res) {
   try {
-    // STEP 1: Fetch Individuals ONLY (No joins, no constraints needed)
+    // STEP 1: Fetch individuals
     const { data: individuals, error: indError } = await supabase
       .from("individual")
       .select(`
@@ -25,10 +25,6 @@ export default async function handler(req, res) {
         age_at_ringing,
         sex_id,
         ringed_date,
-        nest_ringing,
-        nest_id_birth_ringing,
-        nest_id_adult_ringing,
-        transect_id_ringing,
         ring_L_t,
         ring_L_b,
         ring_R_t,
@@ -45,122 +41,31 @@ export default async function handler(req, res) {
       return res.status(200).json([]);
     }
 
-    // STEP 2: Collect all unique Site IDs from all three possible site fields
-    const siteIds = [
-      ...new Set(
-        individuals
-          .flatMap(b => [
-            b.nest_ringing,
-            b.nest_id_birth_ringing,
-            b.nest_id_adult_ringing
-          ])
-          .filter(id => id !== null && id !== undefined)
-      )
-    ];
+    // STEP 2: Ringing place from the view: nest (nest_ringing) or transect
+    // (transect_id_ringing, auto-computed from the coordinates in the DB).
+    let locationMap = {};
 
-    let siteMap = {};
+    const { data: locations, error: locError } = await supabase
+      .from("v_individual_location")
+      .select("individual_id, river_code, transect_code, transect_name, distance_from_pdg_m");
 
-    // STEP 3: Fetch Site Data ONLY if we have IDs
-    if (siteIds.length > 0) {
-      const { data: sitesData, error: siteError } = await supabase
-        .from("site")
-        .select("id, display_name, distance_from_pdg_m")
-        .in("id", siteIds);
-
-      if (!siteError && sitesData) {
-        sitesData.forEach(s => {
-          siteMap[s.id] = {
-            name: s.display_name || "undefined",
-            dist:
-              s.distance_from_pdg_m !== null &&
-              s.distance_from_pdg_m !== undefined
-                ? s.distance_from_pdg_m
-                : null
-          };
-        });
-      } else {
-        console.warn("⚠️ Site fetch failed (non-fatal):", siteError?.message);
-      }
+    if (!locError && locations) {
+      locations.forEach(l => {
+        locationMap[l.individual_id] = l;
+      });
+    } else {
+      console.warn("⚠️ Location fetch failed (non-fatal):", locError?.message);
     }
 
-    // STEP 4: Collect all unique Transect IDs
-    const transectIds = [
-      ...new Set(
-        individuals
-          .map(b => b.transect_id_ringing)
-          .filter(id => id !== null && id !== undefined)
-      )
-    ];
-
-    let transectMap = {};
-
-    // STEP 5: Fetch Transect Data ONLY if we have IDs
-    if (transectIds.length > 0) {
-      const { data: transectsData, error: transectError } = await supabase
-        .schema("ref")
-        .from("transects")
-        .select("id, display_name")
-        .in("id", transectIds);
-
-      if (!transectError && transectsData) {
-        transectsData.forEach(t => {
-          transectMap[t.id] = {
-            name: t.display_name || "undefined"
-          };
-        });
-      } else {
-        console.warn(
-          "⚠️ Transect fetch failed (non-fatal):",
-          transectError?.message
-        );
-      }
-    }
-
-    // STEP 6: Merge Data Manually
+    // STEP 3: Merge Data Manually
     const birds = individuals.map(b => {
 
-      let territory = "undefined";
-      let dist = null;
-
-      // Priority 1: nest_ringing
-      if (
-        b.nest_ringing !== null &&
-        b.nest_ringing !== undefined &&
-        siteMap[b.nest_ringing]
-      ) {
-        territory = siteMap[b.nest_ringing].name;
-        dist = siteMap[b.nest_ringing].dist;
-      }
-
-      // Priority 2: nest_id_birth_ringing
-      else if (
-        b.nest_id_birth_ringing !== null &&
-        b.nest_id_birth_ringing !== undefined &&
-        siteMap[b.nest_id_birth_ringing]
-      ) {
-        territory = siteMap[b.nest_id_birth_ringing].name;
-        dist = siteMap[b.nest_id_birth_ringing].dist;
-      }
-
-      // Priority 3: nest_id_adult_ringing
-      else if (
-        b.nest_id_adult_ringing !== null &&
-        b.nest_id_adult_ringing !== undefined &&
-        siteMap[b.nest_id_adult_ringing]
-      ) {
-        territory = siteMap[b.nest_id_adult_ringing].name;
-        dist = siteMap[b.nest_id_adult_ringing].dist;
-      }
-
-      // Priority 4: transect_id_ringing
-      else if (
-        b.transect_id_ringing !== null &&
-        b.transect_id_ringing !== undefined &&
-        transectMap[b.transect_id_ringing]
-      ) {
-        territory = transectMap[b.transect_id_ringing].name;
-        dist = null;
-      }
+      const loc = locationMap[b.id];
+      // "SP – PuntPeriv": river abbreviation and transect name; distance from
+      // Punt dal Gall only exists for birds ringed at a nest.
+      const territory = [loc?.river_code, loc?.transect_name || loc?.transect_code]
+        .filter(Boolean).join(" – ");
+      const dist = loc?.distance_from_pdg_m ?? null;
 
       return {
         individual_id: b.id,
