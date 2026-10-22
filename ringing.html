@@ -31,8 +31,12 @@
     button:disabled { opacity:.5; cursor:default; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .status { margin-top:8px; font-size:14px; white-space:pre-line; }
-    .status.ok { color:var(--ok); } .status.err { color:var(--err); } .status.warn { color:var(--warn); }
-    .card.saved { border-color:var(--ok); opacity:.75; }
+    .status:empty { display:none; }
+    .status.ok, .status.err, .status.warn { padding:10px 12px; border:2px solid; border-radius:8px; font-weight:600; }
+    .status.ok { color:var(--ok); background:#e8f5ec; } .status.err { color:var(--err); background:#fdecea; } .status.warn { color:var(--warn); background:#fff6dd; }
+    .status.big { font-size:18px; padding:14px 16px; }
+    .card.saved { border:2px solid var(--ok); background:#f4fbf6; }
+    .card.saved fieldset, .card.saved > .grid, .card.saved .checks { opacity:.6; }
     .hidden { display:none; }
     @media (max-width:480px) { .grid.rings { grid-template-columns:repeat(2,1fr); } }
   </style>
@@ -56,6 +60,7 @@
     <div class="row">
       <button id="addBird" class="secondary">+ weiterer Vogel</button>
       <button id="saveAll">Prüfen &amp; speichern</button>
+      <button id="newPage" class="secondary hidden">Neue Seite erfassen</button>
     </div>
     <div id="globalStatus" class="status"></div>
   </section>
@@ -234,12 +239,38 @@ function readBird(card) {
   return bird;
 }
 
-function setStatus(el, kind, text) { el.className = "status" + (kind ? " " + kind : ""); el.textContent = text; }
+function setStatus(el, kind, text, big) {
+  el.className = "status" + (kind ? " " + kind : "") + (big ? " big" : "");
+  el.textContent = text;
+}
+
+function showResult(kind, text) {
+  const global = $("#globalStatus");
+  setStatus(global, kind, text, true);
+  global.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Start a fresh page; date, place, observer and capture method stay as on the last bird
+function newPage() {
+  const cards = document.querySelectorAll("#birds .bird");
+  const last = cards[cards.length - 1];
+  const keep = last ? Object.fromEntries(COPY_FIELDS.map(n => [n, field(last, n).value])) : {};
+  cards.forEach(c => c.remove());
+  addBird();
+  const card = document.querySelector("#birds .bird");
+  for (const [n, v] of Object.entries(keep)) field(card, n).value = v;
+  setStatus($("#globalStatus"), "", "");
+  $("#newPage").classList.add("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 async function saveAll() {
   const cards = [...document.querySelectorAll("#birds .bird:not(.saved)")];
   const global = $("#globalStatus");
-  if (!cards.length) { setStatus(global, "warn", "Nichts zu speichern."); return; }
+  if (!cards.length) {
+    showResult("warn", "Diese Vögel sind bereits gespeichert – es wurde nichts doppelt angelegt.\nFür weitere Vögel „Neue Seite erfassen“ drücken.");
+    return;
+  }
   $("#saveAll").disabled = true;
   setStatus(global, "", "Prüfe …");
 
@@ -269,7 +300,8 @@ async function saveAll() {
       try {
         const r = await api("POST", { mode: "save", bird: readBird(card) });
         const extras = [r.observation_id && `Beobachtung #${r.observation_id}`, r.sample_id && `Blutprobe #${r.sample_id}`].filter(Boolean);
-        setStatus(status, "ok", `Gespeichert: Vogel #${r.individual_id}${extras.length ? " + " + extras.join(" + ") : ""}`);
+        const b = readBird(card);
+        setStatus(status, "ok", `✓ Gespeichert: ${b.ring_number}${b.name ? " " + b.name : ""} (Vogel #${r.individual_id})${extras.length ? " + " + extras.join(" + ") : ""}`, true);
         card.classList.add("saved");
         card.querySelectorAll("input, select, textarea, button").forEach(el => { el.disabled = true; });
         saved++;
@@ -277,7 +309,9 @@ async function saveAll() {
         setStatus(status, "err", `Nicht gespeichert: ${err.message}`);
       }
     }
-    setStatus(global, saved === cards.length ? "ok" : "warn", `${saved} von ${cards.length} Vögeln gespeichert.`);
+    showResult(saved === cards.length ? "ok" : "warn",
+      saved === cards.length ? `✓ ${saved} von ${cards.length} Vögeln gespeichert.` : `${saved} von ${cards.length} Vögeln gespeichert – die übrigen sind rot markiert.`);
+    if (saved) $("#newPage").classList.remove("hidden");
   } catch (err) {
     setStatus(global, "err", err.message);
     if (err.status === 401) showLogin(err.message);
@@ -309,6 +343,7 @@ $("#codeBtn").addEventListener("click", () => login($("#codeInput").value.trim()
 $("#codeInput").addEventListener("keydown", e => { if (e.key === "Enter") login(e.target.value.trim()); });
 $("#addBird").addEventListener("click", addBird);
 $("#saveAll").addEventListener("click", saveAll);
+$("#newPage").addEventListener("click", newPage);
 
 const savedCode = storeGet("ringingTeamCode");
 if (savedCode) login(savedCode); else showLogin();

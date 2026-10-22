@@ -7,11 +7,16 @@ const supabase = createClient(
 );
 
 // Shared team code (Vercel env var RINGING_TEAM_CODE), sent by the form as "x-team-code"
+// Surrounding spaces or line breaks (e.g. from pasting into Vercel) are ignored.
 function hasValidCode(req) {
-  const expected = process.env.RINGING_TEAM_CODE || "";
-  const given = String(req.headers["x-team-code"] || "");
-  if (!expected || given.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+  const expected = Buffer.from((process.env.RINGING_TEAM_CODE || "").trim());
+  const given = Buffer.from(String(req.headers["x-team-code"] || "").trim());
+  if (!expected.length) {
+    console.error("ringing API: RINGING_TEAM_CODE is not set");
+    return false;
+  }
+  if (given.length !== expected.length) return false;
+  return timingSafeEqual(given, expected);
 }
 
 const NUMBER_FIELDS = [
@@ -70,14 +75,14 @@ async function findDuplicates(bird) {
     const { data, error } = await supabase
       .from("individual").select("id, ring_number, name").eq("ring_number", bird.ring_number);
     if (error) throw error;
-    for (const d of data) found.push({ ...d, reason: "Ringnummer existiert bereits" });
+    for (const d of data) found.push({ ...d, reason: "Bereits gespeichert – Ringnummer existiert schon" });
   }
   const key = ringsKey(bird);
   if (key) {
     const { data, error } = await supabase
       .from("individual").select("id, ring_number, name").eq("rings_key", key);
     if (error) throw error;
-    for (const d of data) found.push({ ...d, reason: "Farbring-Kombination existiert bereits" });
+    for (const d of data) found.push({ ...d, reason: "Farbring-Kombination ist bereits vergeben" });
   }
   return found;
 }

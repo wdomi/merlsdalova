@@ -6,6 +6,12 @@ because they are not migrations.
 
 ## 2026-10-22
 
+- **Ringing form:** prominent green result after saving, "already saved" message instead of saving twice,
+  and a "Neue Seite erfassen" button.
+- **Schema:** the server (service_role) may read the lookup tables the ringing form needs
+  (`ref.rings`, `persons`, `age_categories`, `sex_categories`, `sample_types`).
+  [migration](supabase/migrations/20261022090359_grant_service_role_select_ringing_lookups.sql)
+- **Ringing form:** the team code check ignores spaces or line breaks around the code.
 - **Ringing form** `ringing.html` + `api/ringing` for entering newly ringed birds (up to three per page),
   protected by the shared team code `RINGING_TEAM_CODE`. See [docs/ringing-form.md](docs/ringing-form.md).
 - **Schema:** `public.ring_bird(jsonb)` saves a bird plus its optional ringing observation and blood sample
