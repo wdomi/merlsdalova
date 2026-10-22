@@ -6,6 +6,7 @@ because they are not migrations.
 
 ## 2026-10-22
 
+- **Ringing form:** the team code check ignores spaces or line breaks around the code.
 - **Ringing form** `ringing.html` + `api/ringing` for entering newly ringed birds (up to three per page),
   protected by the shared team code `RINGING_TEAM_CODE`. See [docs/ringing-form.md](docs/ringing-form.md).
 - **Schema:** `public.ring_bird(jsonb)` saves a bird plus its optional ringing observation and blood sample

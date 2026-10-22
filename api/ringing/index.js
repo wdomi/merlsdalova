@@ -7,11 +7,16 @@ const supabase = createClient(
 );
 
 // Shared team code (Vercel env var RINGING_TEAM_CODE), sent by the form as "x-team-code"
+// Surrounding spaces or line breaks (e.g. from pasting into Vercel) are ignored.
 function hasValidCode(req) {
-  const expected = process.env.RINGING_TEAM_CODE || "";
-  const given = String(req.headers["x-team-code"] || "");
-  if (!expected || given.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+  const expected = Buffer.from((process.env.RINGING_TEAM_CODE || "").trim());
+  const given = Buffer.from(String(req.headers["x-team-code"] || "").trim());
+  if (!expected.length) {
+    console.error("ringing API: RINGING_TEAM_CODE is not set");
+    return false;
+  }
+  if (given.length !== expected.length) return false;
+  return timingSafeEqual(given, expected);
 }
 
 const NUMBER_FIELDS = [
