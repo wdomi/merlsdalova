@@ -1,6 +1,5 @@
--- Every ringed bird starts with its ringing observation in ind_observation.
--- Copies date, time, place, observer and capture method from individual.
--- Measurements are not copied (they live on individual).
+-- Applied to Supabase project Cinclopedia as migration 20261021171732 (individual_ringing_observation_trigger).
+-- Exported from supabase_migrations.schema_migrations; do not edit, add a new migration instead.
 
 create or replace function public.individual_create_ringing_observation()
 returns trigger
@@ -30,21 +29,6 @@ begin
   return new;
 end $$;
 
-drop trigger if exists trg_individual_ringing_observation on public.individual;
 create trigger trg_individual_ringing_observation
   after insert on public.individual
   for each row execute function public.individual_create_ringing_observation();
-
--- Backfill: ringed birds without an observation on their ringing date.
--- Skips the placeholder ringing date 2000-01-01.
-insert into public.ind_observation
-  (individual_id, date, time, nest_id, transect_id, latitude, longitude,
-   observer, capture_method, action, remark, deleted)
-select i.id, i.ringed_date, i.ringed_time, i.nest_ringing, i.transect_id_ringing,
-       i.latitude, i.longitude, i.observer_id, i.capture_method,
-       'ringing', 'Beringung', false
-from public.individual i
-where i.ringed_date > '2000-01-01'
-  and num_nonnulls(i.nest_ringing, i.transect_id_ringing, i.latitude) >= 1
-  and not exists (select 1 from public.ind_observation o
-                  where o.individual_id = i.id and o.date = i.ringed_date);

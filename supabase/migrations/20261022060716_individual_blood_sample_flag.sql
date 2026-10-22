@@ -1,6 +1,5 @@
--- Tick individual.blood_sample to create the bird's blood sample in sample.
--- Date, place and collector come from the ringing data; coordinates fall back
--- to the transect midpoint. Created samples are marked "auto - bitte prüfen".
+-- Applied to Supabase project Cinclopedia as migration 20261022060716 (individual_blood_sample_flag).
+-- Exported from supabase_migrations.schema_migrations; do not edit, add a new migration instead.
 
 alter table public.individual
   add column blood_sample boolean not null default false;
@@ -44,7 +43,3 @@ end $$;
 create trigger trg_individual_blood_sample
   after insert or update of blood_sample on public.individual
   for each row execute function public.individual_create_blood_sample();
-
--- Tick the box for birds that already have a blood sample
-update public.individual i set blood_sample = true
-where exists (select 1 from public.sample s where s.individual_id = i.id and s.type = 100);
