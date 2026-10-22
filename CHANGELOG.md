@@ -6,6 +6,8 @@ because they are not migrations.
 
 ## 2026-10-22
 
+- **Ringing form:** prominent green result after saving, "already saved" message instead of saving twice,
+  and a "Neue Seite erfassen" button.
 - **Schema:** the server (service_role) may read the lookup tables the ringing form needs
   (`ref.rings`, `persons`, `age_categories`, `sex_categories`, `sample_types`).
   [migration](supabase/migrations/20261022090359_grant_service_role_select_ringing_lookups.sql)

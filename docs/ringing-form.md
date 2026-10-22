@@ -13,6 +13,10 @@ Form for entering newly ringed birds from the field book, up to three per page.
 4. **Prüfen & speichern** checks every bird first (required fields, existing ring number, existing colour
    combination), shows a summary to confirm, then saves each bird.
 
+After saving, each bird shows a green "✓ Gespeichert" box and is locked; clicking "Prüfen & speichern" again
+only says the birds are already saved. "Neue Seite erfassen" starts the next page and keeps date, place and observer.
+Entering an already saved bird again is refused (same ring number or colour combination), so nothing is duplicated.
+
 Nothing is saved before you confirm. Each bird is saved in one transaction by the database function
 `public.ring_bird`, so a bird is never saved without the observation or sample you ticked.
 

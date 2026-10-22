@@ -75,14 +75,14 @@ async function findDuplicates(bird) {
     const { data, error } = await supabase
       .from("individual").select("id, ring_number, name").eq("ring_number", bird.ring_number);
     if (error) throw error;
-    for (const d of data) found.push({ ...d, reason: "Ringnummer existiert bereits" });
+    for (const d of data) found.push({ ...d, reason: "Bereits gespeichert – Ringnummer existiert schon" });
   }
   const key = ringsKey(bird);
   if (key) {
     const { data, error } = await supabase
       .from("individual").select("id, ring_number, name").eq("rings_key", key);
     if (error) throw error;
-    for (const d of data) found.push({ ...d, reason: "Farbring-Kombination existiert bereits" });
+    for (const d of data) found.push({ ...d, reason: "Farbring-Kombination ist bereits vergeben" });
   }
   return found;
 }
