@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Beringung erfassen</title>
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <meta name="theme-color" content="#2a4d69" />
+  <style>
+    :root { --muted:#666; --accent:#2a4d69; --bg:#f8f8f8; --ok:#1b7f3b; --err:#b42318; --warn:#9a6700; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; margin:0; padding:12px; background:var(--bg); color:#222; }
+    main { max-width:760px; margin:0 auto; }
+    h1 { font-size:22px; margin:0 0 4px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .card { background:#fff; border:1px solid #ddd; border-radius:10px; padding:12px; margin:12px 0; }
+    .card h2 { font-size:17px; margin:0 0 8px; display:flex; justify-content:space-between; align-items:center; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px 10px; }
+    .grid.rings { grid-template-columns:repeat(4,1fr); }
+    label { display:flex; flex-direction:column; font-size:12px; color:var(--muted); gap:2px; }
+    input, select, textarea { font:inherit; font-size:15px; padding:6px 7px; border:1px solid #bbb; border-radius:6px; background:#fff; color:#222; width:100%; }
+    textarea { min-height:52px; }
+    fieldset { border:1px solid #e3e3e3; border-radius:8px; margin:10px 0 0; padding:8px 10px 10px; }
+    legend { font-size:13px; font-weight:600; color:var(--accent); padding:0 4px; }
+    .checks { display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:10px; }
+    .checks label { flex-direction:row; align-items:center; gap:6px; font-size:15px; color:#222; }
+    .checks input { width:auto; }
+    button { font:inherit; padding:8px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+    button.secondary { background:#fff; color:var(--accent); }
+    button.small { padding:3px 9px; font-size:13px; }
+    button:disabled { opacity:.5; cursor:default; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .status { margin-top:8px; font-size:14px; white-space:pre-line; }
+    .status.ok { color:var(--ok); } .status.err { color:var(--err); } .status.warn { color:var(--warn); }
+    .card.saved { border-color:var(--ok); opacity:.75; }
+    .hidden { display:none; }
+    @media (max-width:480px) { .grid.rings { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Beringung erfassen</h1>
+  <p class="muted">Neu beringte Vögel aus dem Feldbuch eintragen (bis zu drei pro Seite). Nichts wird gespeichert, bevor du „Prüfen &amp; speichern“ drückst. <a href="/">← Dipper-Finder</a></p>
+
+  <section id="login" class="card hidden">
+    <h2>Teamcode</h2>
+    <div class="row">
+      <input id="codeInput" type="password" placeholder="Teamcode" autocomplete="current-password" style="max-width:240px" />
+      <button id="codeBtn">Anmelden</button>
+    </div>
+    <div id="loginStatus" class="status"></div>
+  </section>
+
+  <section id="app" class="hidden">
+    <div id="birds"></div>
+    <div class="row">
+      <button id="addBird" class="secondary">+ weiterer Vogel</button>
+      <button id="saveAll">Prüfen &amp; speichern</button>
+    </div>
+    <div id="globalStatus" class="status"></div>
+  </section>
+</main>
+
+<template id="birdTpl">
+  <div class="card bird">
+    <h2><span class="title">Vogel</span> <button class="small secondary remove" type="button">Entfernen</button></h2>
+
+    <div class="grid">
+      <label>Ringnummer (Alu) *<input name="ring_number" placeholder="S228.071" /></label>
+      <label>Name<input name="name" /></label>
+      <label>Datum *<input name="ringed_date" type="date" /></label>
+      <label>Zeit<input name="ringed_time" type="time" /></label>
+    </div>
+
+    <fieldset>
+      <legend>Farbringe (Reihenfolge wie im Feldbuch)</legend>
+      <div class="grid rings">
+        <label>Links oben<select name="ring_L_t" data-lookup="rings"></select></label>
+        <label>Links unten<select name="ring_L_b" data-lookup="rings"></select></label>
+        <label>Rechts oben<select name="ring_R_t" data-lookup="rings"></select></label>
+        <label>Rechts unten<select name="ring_R_b" data-lookup="rings"></select></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ort und Personen</legend>
+      <div class="grid">
+        <label>Transekt<select name="transect_id_ringing" data-lookup="transects"></select></label>
+        <label>oder Nest<select name="nest_ringing" data-lookup="sites"></select></label>
+        <label>Breite (lat)<input name="latitude" inputmode="decimal" placeholder="z.B. 46.68" /></label>
+        <label>Länge (lon)<input name="longitude" inputmode="decimal" placeholder="z.B. 10.13" /></label>
+        <label>Beringer/in *<select name="observer_id" data-lookup="persons"></select></label>
+        <label>Fangmethode *<select name="capture_method" data-lookup="capture_methods"></select></label>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="small secondary gps" type="button">GPS-Position übernehmen</button></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Vogel und Masse</legend>
+      <div class="grid">
+        <label>Alter<select name="age_at_ringing_id" data-lookup="age_categories"></select></label>
+        <label>Geschlecht<select name="sex_id" data-lookup="sex_categories"></select></label>
+        <label>Brutto (g)<input name="gross" inputmode="decimal" /></label>
+        <label>Tara Beutel (g)<input name="tare" inputmode="decimal" /></label>
+        <label>Gewicht netto (g)<input name="weight_gr" inputmode="decimal" /></label>
+        <label>Tarsus (mm)<input name="tarsus_mm" inputmode="decimal" /></label>
+        <label>Schnabel (mm)<input name="beak_mm" inputmode="decimal" /></label>
+        <label>Flügel (mm)<input name="wing_mm" inputmode="decimal" /></label>
+        <label>Feder (mm)<input name="feather_mm" inputmode="decimal" /></label>
+      </div>
+      <label style="margin-top:8px">Bemerkung<textarea name="remark"></textarea></label>
+    </fieldset>
+
+    <div class="checks">
+      <label><input type="checkbox" name="add_observation" checked /> Beobachtung (Beringung) für diesen Vogel erfassen</label>
+      <label><input type="checkbox" name="add_blood_sample" /> Blutprobe für diesen Vogel erfassen</label>
+    </div>
+
+    <div class="status"></div>
+  </div>
+</template>
+
+<script>
+const MAX_BIRDS = 3;
+const COLOR_DE = {
+  metal: "Alu", white: "weiss", black: "schwarz", yellow: "gelb", red: "rot", blue: "blau",
+  green: "grün", rosa: "rosa", violet: "violett", pink: "pink", bronze: "bronze",
+  black_nr: "schwarz mit Nr.", unknown: "unbekannt"
+};
+const COPY_FIELDS = ["ringed_date", "transect_id_ringing", "nest_ringing", "latitude", "longitude", "observer_id", "capture_method"];
+
+let teamCode = "";
+let lookups = null;
+
+const $ = sel => document.querySelector(sel);
+
+function storeGet(key) { try { return localStorage.getItem(key) || ""; } catch { return ""; } }
+function storeSet(key, val) { try { localStorage.setItem(key, val); } catch {} }
+
+async function api(method, body) {
+  const res = await fetch("/api/ringing", {
+    method,
+    headers: { "Content-Type": "application/json", "x-team-code": teamCode },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), { status: res.status });
+  return data;
+}
+
+function optionLabel(kind, item) {
+  switch (kind) {
+    case "rings": return item.id === 99 ? "unbekannt" : `${COLOR_DE[item.color] || item.color} / ${item.color}`;
+    case "transects": return item.display_name;
+    case "sites": return item.display_name || item.name || `Nest ${item.id}`;
+    case "persons": return [item.name, item.surname].filter(Boolean).join(" ");
+    case "age_categories": return `${item.code} – ${item.name}`;
+    case "sex_categories": return `${item.code} – ${item.remark}`;
+    case "capture_methods": return `${item.code} – ${item.remark}`;
+    default: return String(item.id);
+  }
+}
+
+function fillSelects(card) {
+  card.querySelectorAll("select[data-lookup]").forEach(sel => {
+    const kind = sel.dataset.lookup;
+    sel.innerHTML = '<option value="">–</option>' +
+      (lookups[kind] || []).map(it => `<option value="${it.id}">${optionLabel(kind, it)}</option>`).join("");
+  });
+}
+
+function field(card, name) { return card.querySelector(`[name="${name}"]`); }
+
+function addBird() {
+  const cards = document.querySelectorAll("#birds .bird");
+  if (cards.length >= MAX_BIRDS) return;
+  const card = $("#birdTpl").content.firstElementChild.cloneNode(true);
+  fillSelects(card);
+
+  const prev = cards[cards.length - 1];
+  if (prev) {
+    COPY_FIELDS.forEach(n => { field(card, n).value = field(prev, n).value; });
+  } else {
+    field(card, "ringed_date").value = new Date().toISOString().slice(0, 10);
+    field(card, "capture_method").value = "2";
+  }
+
+  card.querySelector(".remove").addEventListener("click", () => { card.remove(); renumber(); });
+  card.querySelector(".gps").addEventListener("click", () => useGps(card));
+  ["gross", "tare"].forEach(n => field(card, n).addEventListener("input", () => {
+    const g = parseNum(field(card, "gross").value), t = parseNum(field(card, "tare").value);
+    if (g !== null && t !== null) field(card, "weight_gr").value = Math.round((g - t) * 10) / 10;
+  }));
+  field(card, "transect_id_ringing").addEventListener("change", e => { if (e.target.value) field(card, "nest_ringing").value = ""; });
+  field(card, "nest_ringing").addEventListener("change", e => { if (e.target.value) field(card, "transect_id_ringing").value = ""; });
+
+  $("#birds").appendChild(card);
+  renumber();
+}
+
+function renumber() {
+  const cards = document.querySelectorAll("#birds .bird");
+  cards.forEach((c, i) => { c.querySelector(".title").textContent = `Vogel ${i + 1}`; });
+  $("#addBird").disabled = cards.length >= MAX_BIRDS;
+}
+
+function parseNum(v) {
+  if (v === undefined || v === null || String(v).trim() === "") return null;
+  const n = Number(String(v).replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+function useGps(card) {
+  const status = card.querySelector(".status");
+  if (!navigator.geolocation) { setStatus(status, "err", "GPS nicht verfügbar."); return; }
+  setStatus(status, "", "GPS wird gesucht …");
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      field(card, "latitude").value = pos.coords.latitude.toFixed(6);
+      field(card, "longitude").value = pos.coords.longitude.toFixed(6);
+      setStatus(status, "ok", `GPS übernommen (±${Math.round(pos.coords.accuracy)} m).`);
+    },
+    err => setStatus(status, "err", `GPS-Fehler: ${err.message}`),
+    { enableHighAccuracy: true, timeout: 20000 }
+  );
+}
+
+function readBird(card) {
+  const bird = {};
+  card.querySelectorAll("input[name], select[name], textarea[name]").forEach(el => {
+    if (el.name === "gross" || el.name === "tare") return;
+    bird[el.name] = el.type === "checkbox" ? el.checked : el.value;
+  });
+  return bird;
+}
+
+function setStatus(el, kind, text) { el.className = "status" + (kind ? " " + kind : ""); el.textContent = text; }
+
+async function saveAll() {
+  const cards = [...document.querySelectorAll("#birds .bird:not(.saved)")];
+  const global = $("#globalStatus");
+  if (!cards.length) { setStatus(global, "warn", "Nichts zu speichern."); return; }
+  $("#saveAll").disabled = true;
+  setStatus(global, "", "Prüfe …");
+
+  try {
+    // 1) check every bird first
+    const problems = [];
+    for (const card of cards) {
+      const r = await api("POST", { mode: "check", bird: readBird(card) });
+      const lines = [...r.errors, ...r.duplicates.map(d => `${d.reason}: ${d.ring_number} (${d.name || "ohne Name"})`)];
+      setStatus(card.querySelector(".status"), lines.length ? "err" : "ok", lines.length ? lines.join("\n") : "Geprüft – bereit zum Speichern.");
+      if (lines.length) problems.push(card);
+    }
+    if (problems.length) { setStatus(global, "err", "Bitte die markierten Vögel korrigieren."); return; }
+
+    // 2) show a summary and confirm
+    const summary = cards.map((card, i) => {
+      const b = readBird(card);
+      const extras = [b.add_observation && "Beobachtung", b.add_blood_sample && "Blutprobe"].filter(Boolean).join(" + ") || "nur Vogel";
+      return `Vogel ${i + 1}: ${b.ring_number} ${b.name || ""} – ${b.ringed_date} – ${extras}`;
+    }).join("\n");
+    if (!confirm(`Folgendes speichern?\n\n${summary}`)) { setStatus(global, "", "Abgebrochen – nichts gespeichert."); return; }
+
+    // 3) save one by one; each bird is its own transaction
+    let saved = 0;
+    for (const card of cards) {
+      const status = card.querySelector(".status");
+      try {
+        const r = await api("POST", { mode: "save", bird: readBird(card) });
+        const extras = [r.observation_id && `Beobachtung #${r.observation_id}`, r.sample_id && `Blutprobe #${r.sample_id}`].filter(Boolean);
+        setStatus(status, "ok", `Gespeichert: Vogel #${r.individual_id}${extras.length ? " + " + extras.join(" + ") : ""}`);
+        card.classList.add("saved");
+        card.querySelectorAll("input, select, textarea, button").forEach(el => { el.disabled = true; });
+        saved++;
+      } catch (err) {
+        setStatus(status, "err", `Nicht gespeichert: ${err.message}`);
+      }
+    }
+    setStatus(global, saved === cards.length ? "ok" : "warn", `${saved} von ${cards.length} Vögeln gespeichert.`);
+  } catch (err) {
+    setStatus(global, "err", err.message);
+    if (err.status === 401) showLogin(err.message);
+  } finally {
+    $("#saveAll").disabled = false;
+  }
+}
+
+function showLogin(message) {
+  $("#app").classList.add("hidden");
+  $("#login").classList.remove("hidden");
+  setStatus($("#loginStatus"), message ? "err" : "", message || "");
+}
+
+async function login(code) {
+  teamCode = code;
+  try {
+    lookups = await api("GET");
+    storeSet("ringingTeamCode", code);
+    $("#login").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    if (!document.querySelector("#birds .bird")) addBird();
+  } catch (err) {
+    showLogin(err.message);
+  }
+}
+
+$("#codeBtn").addEventListener("click", () => login($("#codeInput").value.trim()));
+$("#codeInput").addEventListener("keydown", e => { if (e.key === "Enter") login(e.target.value.trim()); });
+$("#addBird").addEventListener("click", addBird);
+$("#saveAll").addEventListener("click", saveAll);
+
+const savedCode = storeGet("ringingTeamCode");
+if (savedCode) login(savedCode); else showLogin();
+</script>
+</body>
+</html>
